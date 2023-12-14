@@ -83,37 +83,41 @@ def search_cat(search_):
     return type_
 
 
-def update_table(table_name_, db_path_, columns_, values_, search_par_, search_):
-    search_param_ = {'1': 'ID',
-                     '2': 'Worker',
-                     '3': 'PhoneNumber',
-                     '4': 'WorkMail',
-                     '5': 'Kabinet',
-                     '6': 'TG_id',
-                     '7': 'SEDO_id'
-                     }
-    conn_ = sqlite3.connect(str(db_path_))
-    # Создание курсора для выполнения SQL-запросов
-    cur_ = conn_.cursor()
-    set_param_ = ''
-    i = 0
-    set_param_ = ''
-    for column_ in columns_:
-        set_param_ = set_param_ + str(column_) + ' = ' + "'"+str(values_[i])+"'"
-        if column_ == columns_[-1]:
-            set_param_ = set_param_ + ' '
-        else:
-            set_param_ = set_param_ + ', '
-        i = i+1
-    columns_query_ = f"UPDATE {str(table_name_)} SET {set_param_}WHERE {search_param_[search_par_]} = {search_}"
-    # Выполнение запроса
-    cur_.execute(columns_query_)
-    conn_.commit()
-    cur_.close()
-    conn_.close()
-    # Получение результатов имен столбцов
-    return 'Update complete'
-
+def update_table(table_name_, columns_, values_, search_par_, search_, sender_id_):
+    if check_admin(sender_id_) == 1:
+        db_path_ = f'{os.getcwd()}/data/DSA.db'
+        search_param_ = {'1': 'ID',
+                         '2': 'Worker',
+                         '3': 'PhoneNumber',
+                         '4': 'WorkMail',
+                         '5': 'Kabinet',
+                         '6': 'TG_id',
+                         '7': 'SEDO_id'
+                         }
+        conn_ = sqlite3.connect(str(db_path_))
+        # Создание курсора для выполнения SQL-запросов
+        cur_ = conn_.cursor()
+        set_param_ = ''
+        i = 0
+        set_param_ = ''
+        for column_ in columns_:
+            set_param_ = set_param_ + str(column_) + ' = ' + "'"+str(values_[i])+"'"
+            if column_ == columns_[-1]:
+                set_param_ = set_param_ + ' '
+            else:
+                set_param_ = set_param_ + ', '
+            i = i+1
+        columns_query_ = f"UPDATE {str(table_name_)} SET {set_param_}WHERE {search_param_[search_par_]} = '{search_}'"
+        print(columns_query_)
+        # Выполнение запроса
+        cur_.execute(columns_query_)
+        conn_.commit()
+        cur_.close()
+        conn_.close()
+        # Получение результатов имен столбцов
+        return 'Update complete'
+    else:
+        return 'Извините, у вас нет прав на это действие'
 
 def whoami(tg_id_):
     bd_path_ = f'{os.getcwd()}/data/DSA.db'
@@ -204,6 +208,18 @@ def search_sender(tg_id_):
         return result_[0]
 
 
+def check_admin(tg_id_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{float(tg_id_)}' AND admin_int = '1'"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    if rows_:
+        return 1
+    else:
+        return 0
 
 if __name__ == '__main__':
 
@@ -215,12 +231,12 @@ if __name__ == '__main__':
     # conn.close()
     column_list = table_info('users', bd_path)
     # print(column_list)
-    columns = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id']
-    worker = 'Габитов'
+    columns = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id', 'admin_int']
+    worker = 'Арсеньев'
     search_type = search_cat(worker)
     if '::' in worker:
         worker = worker.split('::')[1]
-    a=user_info(worker, search_type, columns, bd_path)
+    a = user_info(worker, search_type, columns, bd_path)
     for item in a:
         print(item)
 
@@ -234,13 +250,13 @@ if __name__ == '__main__':
 
 
 
-    # list_tg = df['Телеграм'].to_list()
-    # print(list_tg)
-    # conn = sqlite3.connect(str(bd_path))
-    # # Создание курсора для выполнения SQL-запросов
-    # cur = conn.cursor()
-    #
-    # columns_query = f"ALTER TABLE users ADD TG_chat_id INTEGER;"
+    list_tg = df['Телеграм'].to_list()
+    print(list_tg)
+    conn = sqlite3.connect(str(bd_path))
+    # Создание курсора для выполнения SQL-запросов
+    cur = conn.cursor()
+
+    # columns_query = f"ALTER TABLE users ADD admin_int INTEGER;"
     # # Выполнение запроса
     # cur.execute(columns_query)
     # conn.commit()
@@ -254,7 +270,7 @@ if __name__ == '__main__':
     #     search_type = search_cat(worker)
     #     if '::' in worker:
     #         worker = worker.split('::')[1]
-    #     update_table('users', bd_path, ['TG_id', 'SEDO_id'], [str(list_tg[i]), str(list_sedo[i])], search_type, worker)
+    #     update_table('users', ['TG_id', 'SEDO_id'], [str(list_tg[i]), str(list_sedo[i])], search_type, worker)
     # list_id.append(390)
     # for id in list_id:
     #     worker = f'users_id::{id}'

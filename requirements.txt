@@ -21,6 +21,7 @@ numpy==1.24.4
 openpyxl==3.1.2
 pandas==2.0.3
 pipreqs==0.4.13
+polling==0.3.2
 psycopg2==2.9.9
 pydantic==2.5.2
 pydantic_core==2.14.5
@@ -28,6 +29,7 @@ python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML==6.0.1
 requests==2.31.0
+schedule==1.2.1
 six==1.16.0
 soupsieve==2.5
 typing_extensions==4.8.0
