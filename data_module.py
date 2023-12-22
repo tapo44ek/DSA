@@ -4,6 +4,7 @@ import re
 import pandas as pd
 import logging
 import text
+from datetime import  datetime
 logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
 
 
@@ -119,23 +120,17 @@ def update_table(table_name_, columns_, values_, search_par_, search_, sender_id
     else:
         return 'Извините, у вас нет прав на это действие'
 
+
 def whoami(tg_id_):
     bd_path_ = f'{os.getcwd()}/data/DSA.db'
-    columns_ = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id',
-                'OrganizationDevelopment1Calc', 'WorkersTitleCalc', 'UPRAVLENIE1Calc']
+    columns_ = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id', 'SEDO_id', 'notification_time']
     worker_ = f'tg_id_::{tg_id_}'
     search_type_ = search_cat(worker_)
     if '::' in worker_:
-        worker_ = float(worker_.split('::')[1])
+        worker_ = int(worker_.split('::')[1])
         print(worker_)
     a = user_info(worker_, search_type_, columns_, bd_path_)
-    if a[0] == 'Данные не найдены':
-        reply = 'Вы не найдены в базе'
-    else:
-        reply = text.whoami.format(fio=a[0]['Worker'], phone=a[0]['PhoneNumber'], email=a[0]['WorkMail'],
-                                   cabinet=a[0]['Kabinet'], Worker_type=a[0]['OrganizationDevelopment1Calc'],
-                                   otdel=a[0]['UPRAVLENIE1Calc'], upravlenie=a[0]['WorkersTitleCalc'])
-    return reply
+    return a
 
 
 def search(search_, tg_id_):
@@ -145,7 +140,7 @@ def search(search_, tg_id_):
                 'OrganizationDevelopment1Calc', 'WorkersTitleCalc', 'UPRAVLENIE1Calc', 'TG_chat_id']
     worker_ = f'tg_id_::{tg_id_}'
     if '::' in worker_:
-        worker_ = float(worker_.split('::')[1])
+        worker_ = int(worker_.split('::')[1])
         print(worker_)
     search_type_ = search_cat(search_)
     a = user_info(search_, search_type_, columns_, bd_path_)
@@ -166,7 +161,7 @@ def chat_checker(tg_id_, chat_id_):
     columns_list_ = ['ID', 'Worker', 'TG_id', 'TG_chat_id']
     columns_str_ = ', '.join(columns_list_)
     print(tg_id_)
-    user_id_ = float(tg_id_)
+    user_id_ = int(tg_id_)
     select_query_ = f"SELECT {columns_str_} FROM users WHERE TG_id = '{user_id_}'"
     cur_.execute(select_query_)
     rows_ = cur_.fetchall()
@@ -178,7 +173,7 @@ def chat_checker(tg_id_, chat_id_):
     else:
         result_.append("Данные не найдены")
     if not result_[0] == "Данные не найдены":
-        columns_query_ = f"UPDATE users SET TG_chat_id = {chat_id_} WHERE TG_id = {float(tg_id_)}"
+        columns_query_ = f"UPDATE users SET TG_chat_id = {chat_id_} WHERE TG_id = {int(tg_id_)}"
         # Выполнение запроса
         cur_.execute(columns_query_)
         conn_.commit()
@@ -192,7 +187,7 @@ def search_sender(tg_id_):
     conn_ = sqlite3.connect(str(db_path_))
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
-    select_query_ = f"SELECT Worker, TG_id FROM users WHERE TG_id = '{float(tg_id_)}'"
+    select_query_ = f"SELECT Worker, TG_id FROM users WHERE TG_id = '{int(tg_id_)}'"
     cur_.execute(select_query_)
     rows_ = cur_.fetchall()
     result_ = []
@@ -213,7 +208,7 @@ def check_admin(tg_id_):
     conn_ = sqlite3.connect(str(db_path_))
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
-    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{float(tg_id_)}' AND admin_int = '1'"
+    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{int(tg_id_)}' AND admin_int = '1'"
     cur_.execute(select_query_)
     rows_ = cur_.fetchall()
     if rows_:
@@ -221,42 +216,91 @@ def check_admin(tg_id_):
     else:
         return 0
 
+
+def notification_search(time_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT TG_id, notification_type, notification_status, date, time, text FROM notifications WHERE notification_status > 0"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    answer_0_ = []
+    answer_1_ = []
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+        print(result_)
+        for item_ in result_:
+            if time_ in item_['time']:
+                if item_['notification_type'] == 1:
+                    answer_1_.append(item_)
+                if item_['notification_type'] == 0:
+                    answer_0_.append(item_)
+    return answer_0_, answer_1_
+
+
+def foo(tg_id_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{int(tg_id_)}'"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+            print(result_[0]['Worker'])
+            return result_[0]['Worker']
+    else:
+        return 0
+
+
 if __name__ == '__main__':
+    time_start = datetime.now()
+    a, b = notification_search('17:00')
+    print(len(a))
+    print(datetime.now() - time_start)
+    # bd_path = f'{os.getcwd()}/data/DSA.db'
+    # print(table_info('users', bd_path))
 
 
-    bd_path = f'{os.getcwd()}/data/DSA.db'
-    print(table_info('users', bd_path))
     # # print(bd_path)
     # cur.close()
     # conn.close()
-    column_list = table_info('users', bd_path)
+    # column_list = table_info('users', bd_path)
     # print(column_list)
-    columns = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id', 'admin_int']
-    worker = 'Арсеньев'
-    search_type = search_cat(worker)
-    if '::' in worker:
-        worker = worker.split('::')[1]
-    a = user_info(worker, search_type, columns, bd_path)
-    for item in a:
-        print(item)
-
-    df = pd.read_excel('/Users/viktor/Downloads/сотрудники.xlsx', sheet_name='Лист1')
-    df = df[['ID','СЭДО','Телеграм']].fillna(-1)
-    list_id = df['ID'].to_list()
-
-
-
-    list_sedo = df['СЭДО'].to_list()
+    # columns = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id', 'admin_int', 'notification_time']
+    # worker = 'Арсеньев'
+    # search_type = search_cat(worker)
+    # if '::' in worker:
+    #     worker = worker.split('::')[1]
+    # a = user_info(worker, search_type, columns, bd_path)
+    # for item in a:
+    #     print(item)
+    #
+    # df = pd.read_excel('/Users/viktor/Downloads/сотрудники.xlsx', sheet_name='Лист1')
+    # df = df[['ID','СЭДО','Телеграм']].fillna(-1)
+    # list_id = df['ID'].to_list()
 
 
 
-    list_tg = df['Телеграм'].to_list()
-    print(list_tg)
-    conn = sqlite3.connect(str(bd_path))
-    # Создание курсора для выполнения SQL-запросов
-    cur = conn.cursor()
-
-    # columns_query = f"ALTER TABLE users ADD admin_int INTEGER;"
+    # list_sedo = df['СЭДО'].to_list()
+    #
+    #
+    #
+    # list_tg = df['Телеграм'].to_list()
+    # print(list_tg)
+    # conn = sqlite3.connect(str(bd_path))
+    # # Создание курсора для выполнения SQL-запросов
+    # cur = conn.cursor()
+    # columns_query = f"UPDATE users SET TG_chat_id = -1 WHERE TG_chat_id IS NULL"
+    # columns_query = f"ALTER TABLE users ADD notification_time TEXT DEFAULT '';"
     # # Выполнение запроса
     # cur.execute(columns_query)
     # conn.commit()

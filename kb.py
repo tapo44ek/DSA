@@ -6,6 +6,7 @@ menu = [
 ]
 settings = [
     [InlineKeyboardButton(text="📝 Внести изменения в базу", callback_data="/base_change")],
+    [InlineKeyboardButton(text="📝 Посмотреть напоминания", callback_data="/notification_times")],
     [InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="/menu")]
 ]
 menu = InlineKeyboardMarkup(inline_keyboard=menu)
