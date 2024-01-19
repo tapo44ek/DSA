@@ -222,7 +222,8 @@ def notification_search(time_):
     conn_ = sqlite3.connect(str(db_path_))
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
-    select_query_ = f"SELECT TG_id, notification_type, notification_status, date, time, text FROM notifications WHERE notification_status > 0"
+    # select_query_ = f"SELECT TG_id, notification_type, notification_status, date, time, text FROM notifications WHERE notification_status > 0"
+    select_query_ = f"SELECT TG_id, TG_chat_id, Worker, SEDO_id, notification_time FROM users WHERE TG_chat_id > 0"
     cur_.execute(select_query_)
     rows_ = cur_.fetchall()
     answer_0_ = []
@@ -234,11 +235,12 @@ def notification_search(time_):
             result_.append(row_as_dict_)
         print(result_)
         for item_ in result_:
-            if time_ in item_['time']:
-                if item_['notification_type'] == 1:
-                    answer_1_.append(item_)
-                if item_['notification_type'] == 0:
-                    answer_0_.append(item_)
+            if time_ in item_['notification_time']:
+                answer_0_.append(item_)
+                # if item_['notification_type'] == 1:
+                #     answer_1_.append(item_)
+                # if item_['notification_type'] == 0:
+                #     answer_0_.append(item_)
     return answer_0_, answer_1_
 
 
