@@ -23,9 +23,10 @@ class UserActions(StatesGroup):
 
 # bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
-# @router.message(Command("start"))
-# async def start_handler(msg: Message):
-#     await bot.send_message(1944422362, "Привет")
+@router.message(Command("start"))
+async def start_handler(msg: Message):
+    data_module.chat_checker(msg.from_user.id, msg.chat.id)
+    await bot.send_message(msg.from_user.id, "Привет")
 
 
 
@@ -35,7 +36,7 @@ class UserActions(StatesGroup):
 @router.message(F.text == "◀️ Выйти в меню")
 async def menu(msg: Message, state: FSMContext):
     await msg.answer(text.menu, reply_markup=kb.menu)
-    await State.set_state(UserActions.menu)
+    await state.set_state(UserActions.menu)
 
 # @router.message(F.text == 'Кто я')
 # @router.message(F.text == 'кто я')
@@ -92,7 +93,7 @@ async def start_handler(msg: Message, state: FSMContext):
 
 
 @router.message(F.text == "отправь сообщение")
-async def menu(bott: bot):
+async def menu(bot: bot):
     await bot.send_message(chat_id=309025156, text='<b>напиши мне что-нибудь</b>')
 
 

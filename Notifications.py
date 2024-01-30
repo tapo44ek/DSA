@@ -1,37 +1,45 @@
 import time
 import datetime
 from datetime import datetime
-
+import multiprocessing as mp
 import data_module
 import sedo
 from handlers import bot
-import schedule
 import asyncio
 
 
-def add_task_to_schedule(interval, task_function):
-    schedule.every().day.at(interval).do(task_function)
+def send_not(FIO, id_tg, id_sedo):
+    asyncio.run(bot.send_message(chat_id=id_tg, text=sedo.sogl_update(FIO, id_sedo)))
+    try:
+        asyncio.run(bot.session.close())
+    except:
+        pass
 
 
-def notific(time_list_):
-    notification1 = 'Привет! Напоминаю, текущее время - {time_now}'
+def notific():
+
     while True:
+
         time_now = datetime.now()
         time_now = datetime.strftime(time_now, '%H:%M')
         print(time_now)
         a, b = data_module.notification_search(time_now)
+
         if len(a) > 0:
+
             for item in a:
+
                 #Вот сюда вписать инициализацию функции проверки соглов, вывод - готовое сообщение, функция из
                 #sedo.py
-                asyncio.run(bot.send_message(chat_id=item['TG_id'], text=sedo.sogl_update(item['Worker'].split()[0]
-                                                                                          + ' ' + item['Worker'].split()[1][0]
-                                                                                          + '. ' + item['Worker'].split()[2][0]
-                                                                                          + '.', item['SEDO_id'])))
-                asyncio.run(bot.send_message(chat_id=item['TG_id'], text='тестовое напоминание о соглах'))
-                asyncio.run(bot.session.close())
+                a = item['Worker'].split()[0] + ' ' + item['Worker'].split()[1][0] + '.' + item['Worker'].split()[2][0] + '.'
+                p = mp.Process(target=send_not, args=(a, item['TG_id'], item['SEDO_id']))
+                p.start()
+
+
         if len(b) > 0:
+
             for item in b:
+
                 asyncio.run(bot.send_message(chat_id=item['TG_id'], text=item['text']))
                 asyncio.run(bot.session.close())
         # if time_now in time_list_:
@@ -41,10 +49,9 @@ def notific(time_list_):
         #     asyncio.run(bot.session.close())
         #     print('HEY')
         time.sleep(60)
+
     return
 
 
-
 if __name__ == "__main__":
-    time_list = ['15:33', '15:34', '15:35']
-    notific(time_list)
+    notific()

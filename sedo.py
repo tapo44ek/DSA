@@ -8,12 +8,9 @@ Created on Wed Jul  5 08:35:31 2023
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import time
-from datetime import datetime
 from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
 import json
-import numpy as np
 import warnings
 
 
@@ -209,7 +206,7 @@ def sogl_update(FIO, EXECUTOR_ID):
     sogl_s_date = datetime.strftime(datetime.now() - timedelta(days=14), '%d.%m.%Y')
     sogl_end_date = datetime.strftime(datetime.now(), '%d.%m.%Y')
 
-    DNSID = 'wMsWJe-80daXYVWU4d8u_FA'  ##wMsWJe-80daXYVWU4d8u_FA  ##w3YG8nxy3qvMCbxDc5lUM5Q
+    DNSID = 'w3YG8nxy3qvMCbxDc5lUM5Q'  ##wMsWJe-80daXYVWU4d8u_FA  ##w3YG8nxy3qvMCbxDc5lUM5Q
 
     data = {"DNSID": DNSID,
             "group_id": "21",
@@ -421,12 +418,12 @@ def sogl_update(FIO, EXECUTOR_ID):
             p.join()
 
         df_final = pd.concat(df_list)
-        print(df_final)
+        # print(df_final)
         documents = df_final['doc_id'].to_list()
         queue = Queue()
         processes = []
         df_list = []
-        print(documents)
+        # print(documents)
         df_status = pd.DataFrame()
 
         for i in range(len(documents)):
@@ -453,11 +450,15 @@ def sogl_update(FIO, EXECUTOR_ID):
         df_final = pd.DataFrame()
     de = datetime.now()
     print(de)
-    print('\n')
+    # print('\n')
     print(de - ds)
+    # print(df_final)
     if not df_final.empty:
         line = 'Соглы, требующие Вашего внимания:'
         lst_line = df_final['Номер согла'].to_list()
+        text = df_final['Краткое содержание'].to_list()
+        for i in range(len(lst_line)):
+            lst_line[i] = lst_line[i] + ' - ' + text[i]
         lst_line.insert(0, line)
         del line
         rez = '\n'.join(lst_line)
@@ -467,16 +468,11 @@ def sogl_update(FIO, EXECUTOR_ID):
 
 
 if __name__ == '__main__':
-    FIO = 'Габитов Д.Ш.'
-    EXECUTOR_ID = '78264321'  # 78264321 ДШ  #70045 OA
-    df = sogl_update(FIO, EXECUTOR_ID)
-    if df.empty:
-        print('Соглов на согласовании/подписании нет')
-    else:
-        listing = df['Номер согла'].to_list()
-        print('У вас на рассмотрении соглы:')
-        for item in listing:
-            print(f'{item} ,')
+    FIO = 'Гибадулин М.М.'
+    EXECUTOR_ID = '78236529'  # 78264321 ДШ  #70045 OA #78236529 ММ
+    rez = sogl_update(FIO, EXECUTOR_ID)
+    print(rez)
+
 
 
 
