@@ -12,9 +12,9 @@ from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
 import json
 import warnings
-import SMTPmail
+#import SMTPmail
 import config
-import sogl_html
+#import sogl_html
 import data_module
 import re
 
@@ -1306,7 +1306,7 @@ def sogl_update(FIO, EXECUTOR_ID):
                               f'<td class="u-table-cell">{str(sogl_text[i])}</td>' \
                               '</tr>'
                 number = number + 1
-            rez = sogl_html.html1 + html + sogl_html.html2
+#            rez = sogl_html.html1 + html + sogl_html.html2                         --- Потом вернуть как было!!!
             with open(os.getcwd() + f'/web_data/{EXECUTOR_ID}.html', 'w') as f:
                 f.write(rez)
             #send_page(EXECUTOR_ID)
@@ -1334,7 +1334,7 @@ def sogl_report_send(email):
     subject = 'Материалы для отчета по соглам' + mail_date
     body = 'Материалы, сформированные автоматически'
 
-    SMTPmail.send_email(login_mail, password_mail, server, port, recipients, cc, subject, body, att_paths)
+#    SMTPmail.send_email(login_mail, password_mail, server, port, recipients, cc, subject, body, att_paths)                          --- Потом вернуть как было!!!
 
     return 'Письмо направлено на электронную почту'
 

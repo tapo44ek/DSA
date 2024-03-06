@@ -6,7 +6,7 @@ import time
 import pandas as pd
 import logging
 import text
-from datetime import  datetime
+from datetime import datetime
 logging.basicConfig(level=logging.INFO, filename="py_log.log",
                     filemode="a", format="%(asctime)s %(levelname)s %(message)s")
 

@@ -10,7 +10,7 @@ import data_module
 import kb
 import text
 import subprocess
-import SPD2_download
+#import SPD2_download
 router = Router()
 
 
@@ -24,6 +24,8 @@ class UserActions(StatesGroup):
 
 
 # bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+last_msg_ids = [0, 0, 0, 0, 0, 0, 0, 0]
+
 
 @router.message(Command("start"))
 async def start_handler(msg: Message):
@@ -44,20 +46,21 @@ async def menu(msg: Message, state: FSMContext):
 async def helper_status(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer(text.menu, reply_markup=kb.menu)
     await state.set_state(UserActions.menu)
-    await callback.answer(
-        text="Успешно",
-        show_alert=False
-    )
+    await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[0] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[0])
+    last_msg_ids[0] = callback.message.message_id
+    print(last_msg_ids)
 
 
 @router.callback_query(F.data == "/phone_helper")
 async def helper_status(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer(text.phone_helper_main, reply_markup=kb.iexit_kb)
     await state.set_state(UserActions.phone_helper)
-    await callback.answer(
-        text="Успешно",
-        show_alert=False
-    )
+    await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[1] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[1])
+    last_msg_ids[1] = callback.message.message_id
 
 
 @router.callback_query(F.data == "/notification_times")
@@ -65,20 +68,20 @@ async def set_notifications(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer(text.notifications_settings_1.format(
         notifics_=data_module.get_notification(callback.from_user.id)
         ), reply_markup=kb.settings_notifics)
-    await callback.answer(
-        text="Успешно",
-        show_alert=False
-    )
+    await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[2] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[2])
+    last_msg_ids[2] = callback.message.message_id
 
 
 @router.callback_query(F.data == "/set_notifications")
 async def set_notifications(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer(text.notifications_settings_2, reply_markup=kb.iexit_kb)
     await state.set_state(UserActions.notification_set)
-    await callback.answer(
-        text="Успешно",
-        show_alert=False
-    )
+    await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[3] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[3])
+    last_msg_ids[3] = callback.message.message_id
 
 
 @router.message(UserActions.notification_set)
@@ -94,20 +97,15 @@ async def helper_status(callback: types.CallbackQuery, state: FSMContext):
         await bot.send_message(chat_id=callback.from_user.id,
                                text='Выгрузка запущена, примерное время ожидания 2-4 минуты',
                                reply_markup=kb.iexit_kb)
-        await callback.answer(
-            text="Успешно",
-            show_alert=False
-        )
+        await callback.answer(text="Успешно", show_alert=False)
         await callback.message.answer(text=sedo.sogl_report_send(data_module.get_email(callback.from_user.id)),
                                       reply_markup=kb.iexit_kb)
-
-
     else:
         await callback.message.answer(text.no_code, reply_markup=kb.iexit_kb)
-        await callback.answer(
-            text="Успешно",
-            show_alert=False
-        )
+        await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[4] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[4])
+    last_msg_ids[4] = callback.message.message_id
 
 
 @router.callback_query(F.data == "/sedo")
@@ -117,10 +115,10 @@ async def helper_status(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer(text='Меню взаимодействия с СЭДО', reply_markup=kb.sedo_adm_kb)
     else:
         await callback.message.answer(text.no_code, reply_markup=kb.iexit_kb)
-    await callback.answer(
-        text="Успешно",
-        show_alert=False
-    )
+    await callback.answer(text="Успешно", show_alert=False)
+    if last_msg_ids[5] != -1:
+        await bot.delete_message(callback.message.chat.id, last_msg_ids[5])
+    last_msg_ids[5] = callback.message.message_id
 
 
 @router.message(UserActions.phone_helper, F.text == 'Арсеньев')
@@ -211,8 +209,8 @@ async def spd_2(callback: types.CallbackQuery):
         text="Успешно",
         show_alert=False
     )
-    await callback.message.answer(text=SPD2_download.spd_2_download(data_module.get_email(callback.from_user.id)),
-                                  reply_markup=kb.iexit_kb)
+#    await callback.message.answer(text=SPD2_download.spd_2_download(data_module.get_email(callback.from_user.id)),                          --- Потом вернуть как было!!!
+#                                  reply_markup=kb.iexit_kb)
 
 
 @router.message(F.text)
