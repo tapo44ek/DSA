@@ -1,11 +1,34 @@
 import sqlite3
 import os
 import re
+import time
+
 import pandas as pd
 import logging
 import text
 from datetime import  datetime
-logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, filename="py_log.log",
+                    filemode="a", format="%(asctime)s %(levelname)s %(message)s")
+
+
+def get_email(tg_id_):
+    bd_path_ = f'{os.getcwd()}/data/DSA.db'
+    search_column_ = 'TG_id'
+    conn_ = sqlite3.connect(str(bd_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT WorkMail FROM users WHERE TG_id = '{tg_id_}'"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+            print(result_)
+    else:
+        result_.append("Данные не найдены")
+    return result_[0]['WorkMail']
 
 
 def table_info(table_name, db_path_):
@@ -149,7 +172,8 @@ def search(search_, tg_id_):
     else:
         reply = text.whoami.format(fio=a[0]['Worker'], phone=a[0]['PhoneNumber'], email=a[0]['WorkMail'],
                                    cabinet=a[0]['Kabinet'], Worker_type=a[0]['WorkersTitleCalc'],
-                                   otdel=a[0]['OrganizationDevelopment1Calc'], upravlenie=a[0]['UPRAVLENIE1Calc'], chat_id=a[0]['TG_chat_id'])
+                                   otdel=a[0]['OrganizationDevelopment1Calc'], upravlenie=a[0]['UPRAVLENIE1Calc'],
+                                   chat_id=a[0]['TG_chat_id'])
     return reply
 
 
@@ -217,6 +241,48 @@ def check_admin(tg_id_):
         return 0
 
 
+def set_dnsid(dnsid_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    columns_query_ = f"UPDATE dnsid SET status = 0 WHERE dnsid = '{dnsid_}'"
+    # print(columns_query_)
+    # Выполнение запроса
+    cur_.execute(columns_query_)
+    conn_.commit()
+    cur_.close()
+    conn_.close()
+    return
+
+
+def get_dnsid():
+    #SELECT column FROM table ORDER BY RANDOM() LIMIT 1
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    # select_query_ = f"SELECT TG_id, notification_type, notification_status, date, time, text FROM notifications WHERE notification_status > 0"
+    select_query_ = f"SELECT dnsid, status FROM dnsid WHERE status = 0 ORDER BY RANDOM() LIMIT 1"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            dnsid_ = row_as_dict_['dnsid']
+            columns_query_ = f"UPDATE dnsid SET status = 1 WHERE dnsid = '{row_as_dict_['dnsid']}'"
+            # print(columns_query_)
+            # Выполнение запроса
+            cur_.execute(columns_query_)
+            conn_.commit()
+            cur_.close()
+            conn_.close()
+
+        return dnsid_
+    else:
+        return 'error'
+
+
 def notification_search(time_):
     db_path_ = f'{os.getcwd()}/data/DSA.db'
     conn_ = sqlite3.connect(str(db_path_))
@@ -263,11 +329,54 @@ def foo(tg_id_):
         return 0
 
 
+def get_notification(tg_id_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    columns_query_ = f"SELECT notification_time FROM users WHERE  tg_id = '{tg_id_}'"
+    # print(columns_query_)
+    # Выполнение запроса
+    cur_.execute(columns_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    for row_ in rows_:
+        row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+        result_.append(row_as_dict_)
+    cur_.close()
+    conn_.close()
+    try:
+        rez = result_[0]['notification_time']
+    except:
+        rez = 'Данные отсутствуют'
+    return rez
+
+
+def set_notification(tg_id_, notification_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    columns_query_ = f"UPDATE users SET notification_time = '{notification_}' WHERE tg_id = '{tg_id_}'"
+    # print(columns_query_)
+    # Выполнение запроса
+    cur_.execute(columns_query_)
+    conn_.commit()
+    cur_.close()
+    conn_.close()
+    return 'Данные обновлены'
+
+
 if __name__ == '__main__':
-    time_start = datetime.now()
-    a, b = notification_search('17:00')
-    print(len(a))
-    print(datetime.now() - time_start)
+    a = 1
+    # time_start = datetime.now()
+    # a, b = notification_search('17:00')
+    # print(len(a))
+    # r = get_dnsid()
+    # print(r)
+    # time.sleep(5)
+    # set_dnsid(r)
+    # print(datetime.now() - time_start)
     # bd_path = f'{os.getcwd()}/data/DSA.db'
     # print(table_info('users', bd_path))
 
