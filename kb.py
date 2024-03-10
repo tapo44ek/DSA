@@ -4,6 +4,7 @@ menu = [
     [InlineKeyboardButton(text="🔎 Телефонный справочник", callback_data="/phone_helper")],
     [InlineKeyboardButton(text="💳 Настройки", callback_data="/settings")]
 ]
+
 settings = [
     [InlineKeyboardButton(text="📝 Внести изменения в базу", callback_data="/base_change")],
     [InlineKeyboardButton(text="📝 Посмотреть напоминания", callback_data="/notification_times")],
