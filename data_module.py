@@ -172,8 +172,7 @@ def search(search_, tg_id_):
     else:
         reply = text.whoami.format(fio=a[0]['Worker'], phone=a[0]['PhoneNumber'], email=a[0]['WorkMail'],
                                    cabinet=a[0]['Kabinet'], Worker_type=a[0]['WorkersTitleCalc'],
-                                   otdel=a[0]['OrganizationDevelopment1Calc'], upravlenie=a[0]['UPRAVLENIE1Calc'],
-                                   chat_id=a[0]['TG_chat_id'])
+                                   otdel=a[0]['OrganizationDevelopment1Calc'], upravlenie=a[0]['UPRAVLENIE1Calc'])
     return reply
 
 
@@ -247,6 +246,48 @@ def set_dnsid(dnsid_):
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
     columns_query_ = f"UPDATE dnsid SET status = 0 WHERE dnsid = '{dnsid_}'"
+    # print(columns_query_)
+    # Выполнение запроса
+    cur_.execute(columns_query_)
+    conn_.commit()
+    cur_.close()
+    conn_.close()
+    return
+
+
+def get_report(report):
+    #SELECT column FROM table ORDER BY RANDOM() LIMIT 1
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    # select_query_ = f"SELECT TG_id, notification_type, notification_status, date, time, text FROM notifications WHERE notification_status > 0"
+    select_query_ = f"SELECT tg_id FROM reports WHERE report_name = '{report}' ORDER BY RANDOM() LIMIT 1"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            tg_id_ = row_as_dict_['tg_id']
+            columns_query_ = f"UPDATE reports SET tg_id = 0 WHERE tg_id = {row_as_dict_['tg_id']}"
+            # print(columns_query_)
+            # Выполнение запроса
+            cur_.execute(columns_query_)
+            conn_.commit()
+            cur_.close()
+            conn_.close()
+
+        return tg_id_
+    else:
+        return 'error'
+
+
+def set_report(report, tg_id_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    conn_ = sqlite3.connect(str(db_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    columns_query_ = f"UPDATE reports SET tg_id = {tg_id_} WHERE report_name = '{report}'"
     # print(columns_query_)
     # Выполнение запроса
     cur_.execute(columns_query_)
@@ -369,69 +410,4 @@ def set_notification(tg_id_, notification_):
 
 if __name__ == '__main__':
     a = 1
-    # time_start = datetime.now()
-    # a, b = notification_search('17:00')
-    # print(len(a))
-    # r = get_dnsid()
-    # print(r)
-    # time.sleep(5)
-    # set_dnsid(r)
-    # print(datetime.now() - time_start)
-    # bd_path = f'{os.getcwd()}/data/DSA.db'
-    # print(table_info('users', bd_path))
 
-
-    # # print(bd_path)
-    # cur.close()
-    # conn.close()
-    # column_list = table_info('users', bd_path)
-    # print(column_list)
-    # columns = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id', 'admin_int', 'notification_time']
-    # worker = 'Арсеньев'
-    # search_type = search_cat(worker)
-    # if '::' in worker:
-    #     worker = worker.split('::')[1]
-    # a = user_info(worker, search_type, columns, bd_path)
-    # for item in a:
-    #     print(item)
-    #
-    # df = pd.read_excel('/Users/viktor/Downloads/сотрудники.xlsx', sheet_name='Лист1')
-    # df = df[['ID','СЭДО','Телеграм']].fillna(-1)
-    # list_id = df['ID'].to_list()
-
-
-
-    # list_sedo = df['СЭДО'].to_list()
-    #
-    #
-    #
-    # list_tg = df['Телеграм'].to_list()
-    # print(list_tg)
-    # conn = sqlite3.connect(str(bd_path))
-    # # Создание курсора для выполнения SQL-запросов
-    # cur = conn.cursor()
-    # columns_query = f"UPDATE users SET TG_chat_id = -1 WHERE TG_chat_id IS NULL"
-    # columns_query = f"ALTER TABLE users ADD notification_time TEXT DEFAULT '';"
-    # # Выполнение запроса
-    # cur.execute(columns_query)
-    # conn.commit()
-    # cur.close()
-    # conn.close()
-
-
-
-    # for i in range(len(list_id)):
-    #     worker = f'users_id::{list_id[i]}'
-    #     search_type = search_cat(worker)
-    #     if '::' in worker:
-    #         worker = worker.split('::')[1]
-    #     update_table('users', ['TG_id', 'SEDO_id'], [str(list_tg[i]), str(list_sedo[i])], search_type, worker)
-    # list_id.append(390)
-    # for id in list_id:
-    #     worker = f'users_id::{id}'
-    #     search_type = search_cat(worker)
-    #     if '::' in worker:
-    #         worker = worker.split('::')[1]
-    #     a = user_info(worker, search_type, columns, bd_path)
-    # print(list_tg)
-    # update_table('users', bd_path, ['TG_id'], ['309025156'], search_type, worker)

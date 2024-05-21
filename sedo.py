@@ -10,7 +10,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
+from handlers import bot
+from aiogram.types import Message, FSInputFile
 import json
+import asyncio
 import warnings
 import SMTPmail
 import config
@@ -21,6 +24,7 @@ import re
 
 def sogl_report(FIO, EXECUTOR_ID):
     DNSID = data_module.get_dnsid() #data_module.get_dnsid()  ##wMsWJe-80daXYVWU4d8u_FA  ##w3YG8nxy3qvMCbxDc5lUM5Q
+    DNSID1 = DNSID
     warnings.filterwarnings('ignore')
     ds = datetime.now()
     print(ds)
@@ -49,8 +53,7 @@ def sogl_report(FIO, EXECUTOR_ID):
             "x": "1"}
 
     headers = {
-        'Coockie': '_pk_id.2.0be7=3994f22e0dea1ba7.1701238391.; last_login_u_id=80742170; mos_id=Cg+IAmVm5+A2QiUA6mciAgA=; uxs_uid=c16d3440-8e88-11ee-9b8b-5b423ede1f01; last_login_u_id=80742170; _ym_uid=1707132934636728086; _ym_d=1707132934; _ym_isad=2; menu_item_6=1; SED.menuItems=["s-menu-stat"]; auth_token=799516ed970ee68d8cbe5a94d88bd8be5ea6fe26; session-cookie=17b13464377398bd0b129f0abd6e2070ba469caaedb7b5f35e0c59a75183307fe5885e14db766cc199bd895441bcf141; _pk_ses.2.0be7=1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
         'Connection': 'keep-alive', }
 
     data_DS = {
@@ -210,12 +213,29 @@ def sogl_report(FIO, EXECUTOR_ID):
         'csdr_init_date_0_t': ''
     }
 
+    r = s.post(url_auth, data=data, headers=headers, allow_redirects=False)
+    data_module.set_dnsid(DNSID)
+    DNSID = r.headers['location'].split('DNSID=')[1]
+    print(r.headers)
+    print(r.cookies)
+    # auth_token = r.cookies.get_dict()['auth_token_s']
+    # headers2 = {
+    #     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
+    #     'Connection': 'keep-alive',
+    #     'Sec-Fetch-User': '?1',
+    #     'Sec-Fetch-Dest': 'document',
+    #     'Cookie': f'auth_token={auth_token};'
+    # }
+    headers2 = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document'
+    }
     url_sogl = f'https://mosedo.mos.ru/document_search.php?new=0&DNSID={DNSID}'
-
-    r = s.post(url_auth, data=data, headers=headers)
     print(r)
     s.cookies
-    r2 = s.post(url_sogl, data=data_DS, headers=headers)
+    r2 = s.post(url_sogl, data=data_DS, headers=headers2)
     print(r2.text)
     with open("sogl1.html", "w") as file:
         file.write(r2.text)
@@ -304,12 +324,13 @@ def sogl_report(FIO, EXECUTOR_ID):
         # print(df_status)
         # df_final = pd.merge(df_final, df_status, on='doc_id', how='left')
         # df_final.drop(['Дата согла', 'Адресат', 'doc_id', 'link_id'], axis=1, inplace=True)
-        df_final.to_excel(os.getcwd()+f'/sogl_report/{FIO}_sogl_report.xlsx')
+        df_final.to_excel(os.getcwd()+f'\\sogl_report\\{FIO}_sogl_report.xlsx')
     else:
+        print('DRUGOE')
         df_final = pd.DataFrame(columns=['Номер согла','Краткое содержание','na nomer','Срок МФ/Срок РГ','Срок РГ/Срок ОА','Срок исполнителя'])
-        df_final.to_excel(os.getcwd() + f'/sogl_report/{FIO}_sogl_report.xlsx')
+        df_final.to_excel(os.getcwd() + f'\\sogl_report\\{FIO}_sogl_report.xlsx')
     data_module.set_dnsid(DNSID)
-    return os.getcwd() + f'/sogl_report/{FIO}_sogl_report.xlsx'
+    return os.getcwd() + f'\\sogl_report\\{FIO}_sogl_report.xlsx'
 
 
 def sogly(s, DNSID, page, queue):
@@ -1180,15 +1201,23 @@ def sogl_update(FIO, EXECUTOR_ID):
         'csdr_init_date_0_t': ''
     }
 
-    url_sogl = f'https://mosedo.mos.ru/document_search.php?new=0&DNSID={DNSID}'
 
-    r = s.post(url_auth, data=data, headers=headers)
 
+    r = s.post(url_auth, data=data, headers=headers, allow_redirects=False)
+    data_module.set_dnsid(DNSID)
+    DNSID = r.headers['location'].split('DNSID=')[1]
+    # auth_token = s.cookies.get_dict()['auth_token']
     #s.cookies
-
-    r2 = s.post(url_sogl, data=data_DS, headers=headers)
-    # with open("sogl1.html", "w") as file:
-    #     file.write(r2.text)
+    headers2 = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document',
+    }
+    url_sogl = f'https://mosedo.mos.ru/document_search.php?new=0&DNSID={DNSID}'
+    r2 = s.post(url_sogl, data=data_DS, headers=headers2)
+    with open("sogl1.html", "w") as file:
+        file.write(r2.text)
     first_soup = BeautifulSoup(r2.text, 'html.parser')
     try:
         count_doc = int(first_soup.find('span', class_='search-export__count').text.split(': ')[1])
@@ -1321,22 +1350,32 @@ def sogl_report_send(email):
     att_paths = []
     for i in range(len(FIO)):
         att_paths.append(sogl_report(FIO[i], EXECUTOR_ID[i]))
-
-    login_mail = config.EMAIL_LOG
-    password_mail = config.EMAIL_PASS
-    server = "owa.mos.ru"
-    port = 587
-    recipients = [email]
-    cc = ['ArsenevVD@mos.ru']
-
-    mail_date = datetime.strftime(datetime.today(), '%d.%m.%Y')
-
-    subject = 'Материалы для отчета по соглам' + mail_date
-    body = 'Материалы, сформированные автоматически'
-
-    SMTPmail.send_email(login_mail, password_mail, server, port, recipients, cc, subject, body, att_paths)
-
-    return 'Письмо направлено на электронную почту'
+    print('docs done')
+    print(email)
+    for i in range(len(att_paths)):
+        print(att_paths[i])
+        file = FSInputFile(att_paths[i])
+        asyncio.run(bot.send_document(email, file, caption=f'Отчет по соглам файл {str(i+1)} из {len(att_paths)}'))
+        try:
+            asyncio.run(bot.session.close())
+        except:
+            pass
+    return att_paths
+    # login_mail = config.EMAIL_LOG
+    # password_mail = config.EMAIL_PASS
+    # server = "owa.mos.ru"
+    # port = 587
+    # recipients = [email]
+    # cc = ['ArsenevVD@mos.ru']
+    #
+    # mail_date = datetime.strftime(datetime.today(), '%d.%m.%Y')
+    #
+    # subject = 'Материалы для отчета' + mail_date
+    # body = 'Материалы, сформированные автоматически'
+    #
+    # SMTPmail.send_email(login_mail, password_mail, server, port, recipients, cc, subject, body, att_paths)
+    #
+    # return 'Письмо направлено на электронную почту'
 
 
 if __name__ == '__main__':
@@ -1345,7 +1384,7 @@ if __name__ == '__main__':
     # sogl_report(FIO, EXECUTOR_ID)
     # rez = sogl_update(FIO, EXECUTOR_ID)
     # print(rez)
-    sogl_report_send('ArsenevVD@mos.ru')
+    sogl_report_send(260399228)
 
 
 

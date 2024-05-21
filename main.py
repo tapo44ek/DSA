@@ -5,6 +5,7 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 import handlers
 import config
+import subprocess
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 async def main():
@@ -17,4 +18,6 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
+    subprocess.Popen(['python', 'Notifications.py'])
     asyncio.run(main())
+    # exec(open('Notifications.py').read())
