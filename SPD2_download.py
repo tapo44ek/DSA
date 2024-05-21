@@ -24,6 +24,7 @@ import asyncio
 import multiprocessing as mp
 from PyPDF2 import PdfReader
 import requests
+import config
 
 
 def get_text(guid):
@@ -81,27 +82,23 @@ def tz_change(column, df_final):
 
 
 def list_otkaz(data_ENO):
-    hostname = '10.64.121.44'
-    port = 5432
     database = 'camunda'
     database2 = 'spd'
-    username = 'spdreader'
-    password = 'spdreader'
 
     connection = psycopg2.connect(
-        host=hostname,
-        port=port,
+        host=config.hostname,
+        port=config.port,
         database=database,
-        user=username,
-        password=password
+        user=config.username,
+        password=config.password
     )
 
     connection2 = psycopg2.connect(
-        host=hostname,
-        port=port,
+        host=config.hostname,
+        port=config.port,
         database=database2,
-        user=username,
-        password=password
+        user=config.username,
+        password=config.password
     )
 
     cursor2 = connection2.cursor()
@@ -297,14 +294,18 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
         PCuser = settings['PCuser']
 
     # Установите параметры подключения к базе данных
-    hostname = '10.64.121.44'
-    port = 5432
+
     database = 'spd_old_adapter'
-    username = 'spdreader'
-    password = 'spdreader'
+
 
     # Установите соединение с базой данных
-    connection = psycopg2.connect(host=hostname, port=port, database=database, user=username, password=password)
+    connection = psycopg2.connect(
+        host=config.hostname,
+        port=config.port,
+        database=database,
+        user=config.username,
+        password=config.password
+    )
 
     # Создайте курсор для выполнения SQL-запросов
     cursor = connection.cursor()
@@ -364,14 +365,18 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
     connection.close()
 
     # Установите параметры подключения к базе данных
-    hostname = '10.64.121.44'
-    port = 5432
+
     database = 'camunda'
-    username = 'spdreader'
-    password = 'spdreader'
+
 
     # Установите соединение с базой данных
-    connection = psycopg2.connect(host=hostname, port=port, database=database, user=username, password=password)
+    connection = psycopg2.connect(
+        host=config.hostname,
+        port=config.port,
+        database=database,
+        user=config.username,
+        password=config.password
+    )
 
     # Создайте курсор для выполнения SQL-запросов
     cursor = connection.cursor()
@@ -414,14 +419,18 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
     connection.close()
 
     # Установите параметры подключения к базе данных
-    hostname = '10.64.121.44'
-    port = 5432
+
     database = 'spd'
-    username = 'spdreader'
-    password = 'spdreader'
+
 
     # Установите соединение с базой данных
-    connection = psycopg2.connect(host=hostname, port=port, database=database, user=username, password=password)
+    connection = psycopg2.connect(
+        host=config.hostname,
+        port=config.port,
+        database=database,
+        user=config.username,
+        password=config.password
+    )
 
     # Создайте курсор для выполнения SQL-запросов
     cursor = connection.cursor()
