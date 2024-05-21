@@ -118,6 +118,7 @@ def list_otkaz(data_ENO):
     # Запишите заголовки столбцов
     column_names = [desc[0] for desc in cursor2.description]
     sheet.append(column_names)
+    
 
     # Запишите данные
     for row in rows2:
