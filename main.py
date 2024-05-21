@@ -18,6 +18,6 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
-    subprocess.Popen(['python', 'Notifications.py'])
+    # subprocess.Popen(['python', 'Notifications.py'])
     asyncio.run(main())
     # exec(open('Notifications.py').read())
