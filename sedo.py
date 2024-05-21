@@ -17,7 +17,7 @@ import asyncio
 import warnings
 import SMTPmail
 import config
-import sogl_html
+# import sogl_html
 import data_module
 import re
 
@@ -1335,9 +1335,9 @@ def sogl_update(FIO, EXECUTOR_ID):
                               f'<td class="u-table-cell">{str(sogl_text[i])}</td>' \
                               '</tr>'
                 number = number + 1
-            rez = sogl_html.html1 + html + sogl_html.html2
-            with open(os.getcwd() + f'/web_data/{EXECUTOR_ID}.html', 'w') as f:
-                f.write(rez)
+            # rez = sogl_html.html1 + html + sogl_html.html2
+            # with open(os.getcwd() + f'/web_data/{EXECUTOR_ID}.html', 'w') as f:
+            #     f.write(rez)
             #send_page(EXECUTOR_ID)
     else:
         rez = 'В данный момент у Вас нет соглов на рассмотрении'
