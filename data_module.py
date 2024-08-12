@@ -6,7 +6,7 @@ import time
 import pandas as pd
 import logging
 import text
-from datetime import  datetime
+from datetime import datetime
 logging.basicConfig(level=logging.INFO, filename="py_log.log",
                     filemode="a", format="%(asctime)s %(levelname)s %(message)s")
 
@@ -142,6 +142,41 @@ def update_table(table_name_, columns_, values_, search_par_, search_, sender_id
         return 'Update complete'
     else:
         return 'Извините, у вас нет прав на это действие'
+
+
+def reg_rg(sender_id_):
+    db_path_ = f'{os.getcwd()}/data/DSA.db'
+    search_param_ = {'1': 'ID',
+                     '2': 'Worker',
+                     '3': 'PhoneNumber',
+                     '4': 'WorkMail',
+                     '5': 'Kabinet',
+                     '6': 'TG_id',
+                     '7': 'SEDO_id'
+                     }
+    conn_ = sqlite3.connect(str(db_path_))
+    # Создание курсора для выполнения SQL-запросов
+    cur_ = conn_.cursor()
+    # set_param_ = ''
+    # i = 0
+    # set_param_ = ''
+    # for column_ in columns_:
+    #     set_param_ = set_param_ + str(column_) + ' = ' + "'"+str(values_[i])+"'"
+    #     if column_ == columns_[-1]:
+    #         set_param_ = set_param_ + ' '
+    #     else:
+    #         set_param_ = set_param_ + ', '
+    #     i = i+1
+    columns_query_ = f"UPDATE users SET TG_id = {sender_id_}, TG_chat_id = {sender_id_} WHERE Worker LIKE '%Биктимиров%'"
+    print(columns_query_)
+    # Выполнение запроса
+    cur_.execute(columns_query_)
+    conn_.commit()
+    cur_.close()
+    conn_.close()
+    # Получение результатов имен столбцов
+    return 'Update complete'
+
 
 
 def whoami(tg_id_):

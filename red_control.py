@@ -157,7 +157,7 @@ async def info_msg(tg_id, text, last_msg_id):
 
 if __name__ == "__main__":
     last_msg_id = 0
-    with open('settings.json') as f:
+    with open(os.path.join(os.getcwd(), 'settings.json')) as f:
         settings = json.load(f)
         print(settings)
     #    time.sleep(20)
@@ -697,12 +697,12 @@ if __name__ == "__main__":
     k = 0
     ind = 0
 
-    # SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, attachment_paths)
-    # bot.send_message(UserID, 'Письмо направлено')
-    #send_email(recipients, subject, body, attachment_paths, cc )
+    SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
+    asyncio.run(bot.send_message(UserID, 'Письмо направлено'))
+    # send_email(recipients, subject, body, att_paths, cc)
     # while k < 3:
     #     try:
-    #         SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, attachment_paths)
+    #         SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
     #         SMTPmail.send_email()
     #         k = 3
     #         bot.send_message(UserID, 'Письмо направлено')

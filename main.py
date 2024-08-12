@@ -1,8 +1,13 @@
 import asyncio
 import logging
+import os
+import sys
+
 from aiogram import Bot, Dispatcher
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+
+# import Notifications
 import handlers
 import config
 import subprocess
@@ -18,6 +23,10 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
-    # subprocess.Popen(['python', 'Notifications.py'])
+    current_env = os.environ.copy()
+    python_exec = os.path.join(sys.prefix, 'Scripts', 'python')
+    # subprocess.call('Notifications.py', env=current_env)
+    subprocess.Popen([python_exec, 'Notifications.py'])
     asyncio.run(main())
+
     # exec(open('Notifications.py').read())

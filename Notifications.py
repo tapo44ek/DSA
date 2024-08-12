@@ -3,13 +3,13 @@ import datetime
 from datetime import datetime
 import multiprocessing as mp
 import data_module
-import sedo
+from sedo import sogl_update
 from handlers import bot
 import asyncio
 
 
 def send_not(FIO, id_tg, id_sedo):
-    asyncio.run(bot.send_message(chat_id=id_tg, text=sedo.sogl_update(FIO, id_sedo)))
+    asyncio.run(bot.send_message(chat_id=id_tg, text=sogl_update(FIO, id_sedo)))
     try:
         asyncio.run(bot.session.close())
     except:
