@@ -5,12 +5,16 @@ Created on Wed Jul  5 08:35:31 2023
 @author: ArsenevVD
 """
 import os
+
+import certifi
 import requests
+from aiogram import Bot
+from aiogram.enums import ParseMode
 from bs4 import BeautifulSoup
 import pandas as pd
 from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
-from handlers import bot
+# from handlers import bot
 from aiogram.types import Message, FSInputFile
 import json
 import asyncio
@@ -20,7 +24,7 @@ import config
 # import sogl_html
 import data_module
 import re
-
+bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 def sogl_report(FIO, EXECUTOR_ID):
     DNSID = data_module.get_dnsid() #data_module.get_dnsid()  ##wMsWJe-80daXYVWU4d8u_FA  ##w3YG8nxy3qvMCbxDc5lUM5Q
@@ -335,7 +339,7 @@ def sogl_report(FIO, EXECUTOR_ID):
 
 def sogly(s, DNSID, page, queue):
     url = f'https://mosedo.mos.ru/document.php?perform_search=1&DNSID={DNSID}&page={page}'
-    r1 = s.get(url)
+    r1 = s.get(url, verify=certifi.where())
     # with open("sogl1.html", "w") as file:
     #     file.write(r1.text)
     #print(r1.text)
@@ -393,7 +397,7 @@ def sogly(s, DNSID, page, queue):
 
 def sogl_status(s, doc_number, DNSID, queue):
     url = f'https://mosedo.mos.ru/document.card.php?id={doc_number}&DNSID={DNSID}'
-    r1 = s.get(url)
+    r1 = s.get(url, verify=certifi.where())
     soup = BeautifulSoup(r1.text, "html.parser")
     sogl = soup.findAll('table', class_='agreetable')
     doc_card = soup.find('table', class_='scrollable-section')
@@ -501,7 +505,7 @@ def sogl_status(s, doc_number, DNSID, queue):
 
 def sogl_response_rg(s, doc_number, DNSID, queue):
     url = f'https://mosedo.mos.ru/document.card.php?id={doc_number}&DNSID={DNSID}'
-    r1 = s.get(url)
+    r1 = s.get(url, verify=certifi.where())
     soup = BeautifulSoup(r1.text, "html.parser")
     doc_card = soup.find('table', class_='scrollable-section')
     doc_card_soup = BeautifulSoup(str(doc_card), "html.parser")
@@ -545,7 +549,7 @@ def sogl_response_rg(s, doc_number, DNSID, queue):
 
 def sogl_response_oa(s, doc_number, DNSID, queue):
     url = f'https://mosedo.mos.ru/document.card.php?id={doc_number}&DNSID={DNSID}'
-    r1 = s.get(url)
+    r1 = s.get(url, verify=certifi.where())
     soup = BeautifulSoup(r1.text, "html.parser")
     doc_card = soup.find('table', class_='scrollable-section')
     doc_card_soup = BeautifulSoup(str(doc_card), "html.parser")
@@ -591,7 +595,7 @@ def sogl_response_oa(s, doc_number, DNSID, queue):
 def deadline_check_rg(s, DNSID, doc_id):
     warnings.filterwarnings('ignore')
     url = f'https://mosedo.mos.ru/document.card.php?id={doc_id}&DNSID={DNSID}'
-    r2 = s.get(url)
+    r2 = s.get(url, verify=certifi.where())
     # print (r2.text)
     doc_soup = BeautifulSoup(r2.text, 'html.parser').find('table', id='rez-list')
     print(doc_id)
@@ -797,7 +801,7 @@ def deadline_check_rg(s, DNSID, doc_id):
 def deadline_check_oa(s, DNSID, doc_id):
     warnings.filterwarnings('ignore')
     url = f'https://mosedo.mos.ru/document.card.php?id={doc_id}&DNSID={DNSID}'
-    r2 = s.get(url)
+    r2 = s.get(url, verify=certifi.where())
     # print (r2.text)
     doc_soup = BeautifulSoup(r2.text, 'html.parser').find('table', id='rez-list')
     print(doc_id)

@@ -8,6 +8,8 @@ Created on Mon Jun  5 16:05:57 2023
 
 
 import psycopg2
+from aiogram import Bot
+from aiogram.enums import ParseMode
 from openpyxl import Workbook
 import pandas as pd
 from datetime import datetime, timedelta
@@ -18,14 +20,14 @@ import json
 import os
 import SMTPmail
 import config
-from handlers import bot
+# from handlers import bot
 from aiogram.types import Message, FSInputFile
 import asyncio
 import multiprocessing as mp
 from PyPDF2 import PdfReader
 import requests
 import config
-
+bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 def get_text(guid):
 

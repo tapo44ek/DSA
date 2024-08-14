@@ -1,4 +1,7 @@
+import certifi
 import requests
+from aiogram import Bot
+from aiogram.enums import ParseMode
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
@@ -30,17 +33,18 @@ from selenium.webdriver.common.action_chains import ActionChains
 import SMTPmail
 import zipfile
 import data_module
-from handlers import bot
+# from handlers import bot
+import config
 import asyncio
 from aiogram.types import Message, FSInputFile
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import aiogram
-
+bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 def sogly(s, DNSID, page, queue):
     url = f'https://mosedo.mos.ru/document.php?perform_search=1&DNSID={DNSID}&page={page}'
-    r1 = s.get(url)
+    r1 = s.get(url, verify=certifi.where())
     soup = BeautifulSoup(r1.text, 'html.parser')
     table = soup.find_all('table')
     df_foo = pd.read_html(str(table))[0]
@@ -325,7 +329,7 @@ if __name__ == '__main__':
                     foldername)
         shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Список всех сотрудников УВУЖ.xlsx'),
                     foldername)
-        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Макрос_открытия_файлов_по_письмам_Свод.xlsm'),
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Макрос.xlsm'),
                     foldername)
         shutil.copy(os.path.join(workdir, 'income data', 'technical_data', '2023.01.17 Штатка по блоку БРГ.xlsx'),
                     foldername)

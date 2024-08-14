@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import selenium
+import config
+from aiogram import Bot
+from aiogram.enums import ParseMode
 from selenium import webdriver
 import shutil
 import os, os.path
@@ -23,12 +26,12 @@ from openpyxl import load_workbook
 import json
 import SMTPmail
 import data_module
-from handlers import bot
+# from handlers import bot
 import asyncio
 from aiogram.types import Message, FSInputFile
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
+bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 async def info_msg(tg_id, text, last_msg_id):
     if last_msg_id != 0:
@@ -230,7 +233,7 @@ if __name__ == "__main__":
         shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Список всех сотрудников УВУЖ.xlsx'),
                     foldername)
         shutil.copy(
-            os.path.join(workdir, 'income data', 'technical_data', 'Макрос_открытия_файлов_по_письмам_Свод.xlsm'),
+            os.path.join(workdir, 'income data', 'technical_data', 'Макрос.xlsm'),
             foldername)
         shutil.copy(os.path.join(workdir, 'income data', 'technical_data', '2023.01.17 Штатка по блоку БРГ.xlsx'),
                     foldername)
@@ -455,11 +458,11 @@ if __name__ == "__main__":
     # del xl
     dater = now.date()
     try:
-        shutil.copy(techpath2 + r'\красный контроль.xlsx', foldername + 'Красный контроль ' + str(dater) + '.xlsx')
+        shutil.copy(techpath2 + r'\красный контроль.xlsx', os.path.join(foldername, 'Красный контроль ' + str(dater) + '.xlsx'))
     except:
         os.remove(foldername + 'Красный контроль ' + str(dater) + '.xlsx')
 
-        shutil.copy(techpath2 + r'\красный контроль.xlsx', foldername + 'Красный контроль ' + str(dater) + '.xlsx')
+        shutil.copy(techpath2 + r'\красный контроль.xlsx', os.path.join(foldername, 'Красный контроль ' + str(dater) + '.xlsx'))
     last_msg_id = asyncio.run(info_msg(UserID, 'Красный контроль завершен', last_msg_id))
     # bot.send_message(UserID, 'красный контроль успешно выполнен')
     redmail = str(len(df))
