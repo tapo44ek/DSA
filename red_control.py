@@ -225,6 +225,15 @@ if __name__ == "__main__":
     foldername = os.path.join(finpath, "Контроль " + str(date111) + '-' + str(date333))
     if os.path.exists(foldername) == False:
         os.mkdir(foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Контроль.xlsx'),
+                    foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Список всех сотрудников УВУЖ.xlsx'),
+                    foldername)
+        shutil.copy(
+            os.path.join(workdir, 'income data', 'technical_data', 'Макрос_открытия_файлов_по_письмам_Свод.xlsm'),
+            foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', '2023.01.17 Штатка по блоку БРГ.xlsx'),
+                    foldername)
         # bot.send_message(UserID, 'Создал папку для красного контроля')
         # bot.send_message(UserID, foldername)
 
