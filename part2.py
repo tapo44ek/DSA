@@ -24,7 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 import datetime
 import re
 from datetime import datetime, timedelta
-import win32com.client as win32
+# import win32com.client as win32
 import json
 from selenium.webdriver.common.action_chains import ActionChains
 import SMTPmail
@@ -33,6 +33,8 @@ import data_module
 from handlers import bot
 import asyncio
 from aiogram.types import Message, FSInputFile
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import aiogram
 
 
@@ -45,10 +47,10 @@ def sogly(s, DNSID, page, queue):
     queue.put(df_foo)
 
 
-def move_xl(ispolnit, finpath, macroname, PCuser, last_msg_id):
+def move_xl(ispolnit, finpath, macroname, last_msg_id):
     if macroname == 'Контроль общий.xlsm':
         ispolnit = str(ispolnit[0])
-    path = 'C:\\Users\\' + PCuser + '\\Downloads'
+    path = os.path.join(os.getcwd(), 'downloads', 'mail_control')
     tech_path = os.path.join(workdir, 'income data', 'technical_data')
     tech_path = tech_path + '\\'
     files = os.listdir(path)
@@ -56,42 +58,49 @@ def move_xl(ispolnit, finpath, macroname, PCuser, last_msg_id):
     files = [file for file in files if os.path.isfile(file)]
     fp = max(files, key=os.path.getctime)
     print(fp)
+    (df_in,) = pd.read_html(fp)
+    try:
+        os.remove(fp)
+    except:
+        pass
+    print(df_in)
+    df_in.to_excel(os.path.join(finpath, ispolnit + ".xlsx"), index=False)
     # bot.send_message(UserID, str(fp))
-    try:
-        os.rename(fp, tech_path + "02.xls")
-    except:
-        print('ERROR, files to delete')
-        # bot.send_message(UserID, 'Перезаписываю файлы ' + str(ispolnit))
-        os.remove(tech_path + "02.xls")
-        os.rename(fp, tech_path + "02.xls")
-    fname = tech_path + "02.xls"
-    # bot.send_message(UserID, 'xls -> xlsx ' + str(ispolnit))
-    excel = win32.gencache.EnsureDispatch('Excel.Application')
-    wb = excel.Workbooks.Open(fname)
-    try:
-        os.remove(tech_path + "02.xlsx")
-    except:
-        print('VSE HOROSHO')
-
-    wb.SaveAs(fname + "x", FileFormat=51)  # FileFormat = 51 is for .xlsx extension
-    wb.Close()  # FileFormat = 56 is for .xls extension
-    os.remove(tech_path + "02.xls")
-    excel.Application.Quit()
-    xl = win32.Dispatch("Excel.Application")
-    xl.Workbooks.Open(os.path.abspath(tech_path + macroname), ReadOnly=1)
-    xl.Application.Quit()  # Comment this out if your excel script closes
-    del xl
-    try:
-        os.rename(tech_path + '02.xlsx', finpath + ispolnit + ".xlsx")
-    except:
-        print('ERROR, files to delete')
-        # bot.send_message(UserID, 'Перезаписываю файлы '+ str(ispolnit))
-        os.remove(finpath + ispolnit + ".xlsx")
-        os.rename(tech_path + '02.xlsx', finpath + ispolnit + ".xlsx")
-    print('MACRO is DONE')
+    # try:
+    #     os.rename(fp, tech_path + "02.xls")
+    # except:
+    #     print('ERROR, files to delete')
+    #     # bot.send_message(UserID, 'Перезаписываю файлы ' + str(ispolnit))
+    #     os.remove(tech_path + "02.xls")
+    #     os.rename(fp, tech_path + "02.xls")
+    # fname = tech_path + "02.xls"
+    # # bot.send_message(UserID, 'xls -> xlsx ' + str(ispolnit))
+    # excel = win32.gencache.EnsureDispatch('Excel.Application')
+    # wb = excel.Workbooks.Open(fname)
+    # try:
+    #     os.remove(tech_path + "02.xlsx")
+    # except:
+    #     print('VSE HOROSHO')
+    #
+    # wb.SaveAs(fname + "x", FileFormat=51)  # FileFormat = 51 is for .xlsx extension
+    # wb.Close()  # FileFormat = 56 is for .xls extension
+    # os.remove(tech_path + "02.xls")
+    # excel.Application.Quit()
+    # xl = win32.Dispatch("Excel.Application")
+    # xl.Workbooks.Open(os.path.abspath(tech_path + macroname), ReadOnly=1)
+    # xl.Application.Quit()  # Comment this out if your excel script closes
+    # del xl
+    # try:
+    #     os.rename(tech_path + '02.xlsx', finpath + ispolnit + ".xlsx")
+    # except:
+    #     print('ERROR, files to delete')
+    #     # bot.send_message(UserID, 'Перезаписываю файлы '+ str(ispolnit))
+    #     os.remove(finpath + ispolnit + ".xlsx")
+    #     os.rename(tech_path + '02.xlsx', finpath + ispolnit + ".xlsx")
+    # print('MACRO is DONE')
     last_msg_id = asyncio.run(info_msg(UserID, 'xlsx готов для ' + str(ispolnit), last_msg_id))
     # bot.send_message(UserID, 'xlsx готов для ' + str(ispolnit))
-    return  last_msg_id
+    return last_msg_id
 
 
 def download_xls(ispolnit, date1, date2, finpath, macroname, PCuser, last_msg_id):
@@ -105,10 +114,12 @@ def download_xls(ispolnit, date1, date2, finpath, macroname, PCuser, last_msg_id
     enddate = driver.find_element(By.XPATH,
                                   '//*[@id="fDetailedControl"]/div/div[1]/div[1]/div[1]/div[2]/div[1]/div/input')
     startdate.click()
+    # startdate.send_keys(Keys.COMMAND, 'a')
     startdate.send_keys(Keys.CONTROL, 'a')
     startdate.send_keys(Keys.BACKSPACE)
     startdate.send_keys(str(date1))
     enddate.click()
+    # enddate.send_keys(Keys.COMMAND, 'a')
     enddate.send_keys(Keys.CONTROL, 'a')
     enddate.send_keys(Keys.BACKSPACE)
     enddate.send_keys(str(date2))
@@ -139,6 +150,7 @@ def download_xls(ispolnit, date1, date2, finpath, macroname, PCuser, last_msg_id
             ispolnitel_spisok.click()
             g = 10
         else:
+            # ispolnitel.send_keys(Keys.COMMAND, 'a')
             ispolnitel.send_keys(Keys.CONTROL, 'a')
             ispolnitel.send_keys(Keys.BACKSPACE)
             ispolnitel.send_keys(str(ispo[0]))
@@ -196,7 +208,7 @@ def download_xls(ispolnit, date1, date2, finpath, macroname, PCuser, last_msg_id
     time.sleep(2)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(1)
-    path1 = f'C:\\Users\\{PCuser}\\downloads\\'
+    path1 = os.path.join(os.getcwd(), 'downloads', 'mail_control')
     files = os.listdir(path1)
     files = [os.path.join(path1, file) for file in files]
     files = [file for file in files if os.path.isfile(file)]
@@ -217,7 +229,7 @@ def download_xls(ispolnit, date1, date2, finpath, macroname, PCuser, last_msg_id
         filename1 = max(files, key=os.path.getctime)
         print(filename1)
     time.sleep(10)
-    last_msg_id = move_xl(ispolnit, finpath, macroname, PCuser, last_msg_id)
+    last_msg_id = move_xl(ispolnit, finpath, macroname, last_msg_id)
 
     return last_msg_id
 
@@ -260,12 +272,12 @@ async def info_msg(tg_id, text, last_msg_id):
     return last_msg_id
 
 if __name__ == '__main__':
-
+    print(os.getcwd())
     last_msg_id = 0
     warnings.filterwarnings('ignore')
     ds = datetime.now()
     print(ds)
-    with open('settings.json') as f:
+    with open(os.path.join(os.getcwd(), 'settings.json')) as f:
         settings = json.load(f)
         print(settings)
         token = settings['token2']
@@ -301,21 +313,24 @@ if __name__ == '__main__':
     date3 = str(startdateM.date())
     date3 = date3.split(sep='-')
     date33 = date3[2] + '.' + date3[1] + '.' + date3[0]
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\'
-
-    if os.path.exists(finpath + 'Контроль писем общий') == False:
-        os.mkdir(finpath + 'Контроль писем общий')
+    if os.path.exists(os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий')) == False:
+        os.makedirs(os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий'))
         # os.rename()
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
-    folder_from = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
-    foldername = finpath + "Контроль " + str(date111) + '-' + str(date222) + '\\'
-    if not os.path.isdir(foldername):
+    finpath = os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий')
+    foldername = os.path.join(finpath, "Контроль " + str(date111) + '-' + str(date222))
+
+    if os.path.exists(foldername) == False:
         os.mkdir(foldername)
-        shutil.copy(workdir + '\\income data\\technical_data\\Контроль.xlsx', foldername)
-        shutil.copy(workdir + '\\income data\\technical_data\\Список всех сотрудников УВУЖ.xlsx', foldername)
-        shutil.copy(workdir + '\\income data\\technical_data\\Макрос открытия файлов по письмам (Свод).xlsm',
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Контроль.xlsx'),
                     foldername)
-        shutil.copy(workdir + '\\income data\\technical_data\\2023.01.17 Штатка по блоку БРГ.xlsx', foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Список всех сотрудников УВУЖ.xlsx'),
+                    foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', 'Макрос_открытия_файлов_по_письмам_Свод.xlsm'),
+                    foldername)
+        shutil.copy(os.path.join(workdir, 'income data', 'technical_data', '2023.01.17 Штатка по блоку БРГ.xlsx'),
+                    foldername)
+    folder_from = os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий')
+
 
     incomepath = os.path.join(workdir, 'income data', 'income_data_D.xlsx')
     incomedf = pd.read_excel(incomepath, 'sheet1')
@@ -326,9 +341,13 @@ if __name__ == '__main__':
     print(ispolniteli)
 
     path = os.getcwd()
-    chromedriver = str(path) + '/chromedriver.exe'
-    # options.add_argument('headless')  # для открытия headless-браузера https://www.mosedo.mos.ru/auth.php?uri=%2F
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {'profile.default_content_settings.popups': 0,
+             "download.default_directory": os.path.join(os.getcwd(), 'downloads', 'mail_control'),
+             "directory_upgrade": True}
+    chrome_options.add_experimental_option('prefs', prefs)
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     driver.get('https://mosedo.mos.ru/auth.php?uri=%2F')
     time.sleep(3)
     organization = driver.find_element(By.XPATH, '//*[@id="organizations"]')
@@ -340,10 +359,12 @@ if __name__ == '__main__':
     organization1 = driver.find_element(By.XPATH,
                                         '//*[@id="ui-id-1"]/li/a[text() = "Департамент городского имущества города Москвы"]')
     organization1.click()
+    time.sleep(3)
     user.send_keys(SEDOlog)
     time.sleep(5)
     user1 = driver.find_element(By.XPATH, '//*[@id="ui-id-2"]/li/a[text() = "' + str(SEDOlog) + '"]')
     user1.click()
+    time.sleep(3)
     psw.send_keys(SEDOpass)
     login.click()
     time.sleep(2)
@@ -573,8 +594,8 @@ if __name__ == '__main__':
     print('2')
     first_soup = BeautifulSoup(r2.text, 'html.parser')
 
-    with open("sogl.html", "w") as file:
-        file.write(r2.text)
+    # with open("sogl.html", "w") as file:
+    #     file.write(r2.text)
     table = first_soup.find_all('table')
     count_doc = int(first_soup.find('span', attrs={'class': "search-export__count"}).text.split()[-1])
     count_page = count_doc // 15 + 1
@@ -626,19 +647,19 @@ if __name__ == '__main__':
     df1 = df1.set_index(np.arange(1, len(df1) + 1))
     df1.index.rename('№ п/п', inplace=True)
 
-    df1.to_excel(foldername + r'\Мусиенко О.А..xlsx')
+    df1.to_excel(os.path.join(foldername, 'Мусиенко О.А..xlsx'))
     df1.info()
     de = datetime.now()
     print(de)
     print('\n')
     print(de - ds)
-    folder_from = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
-    f = "Контроль " + str(date111) + '-' + str(date222) + '\\'
+    f = "Контроль " + str(date111) + '-' + str(date222)
     files = os.listdir(os.path.join(folder_from, f))
     archive = 'mail_control.zip'
     with zipfile.ZipFile(archive, "w") as zf:
         for file in files:
-            zf.write(os.path.join(folder_from, f, file))
+            file_path = os.path.join(folder_from, f, file)
+            zf.write(file_path, arcname=os.path.relpath(file_path, folder_from))
     last_msg_id = asyncio.run(info_msg(UserID, "Выгрузка завершена", last_msg_id))
     att_paths = ['mail_control.zip']
     for i in range(len(att_paths)):

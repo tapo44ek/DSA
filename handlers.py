@@ -1,3 +1,5 @@
+import os
+import sys
 
 from aiogram import F, Router, types
 from aiogram.filters import Command, StateFilter
@@ -232,8 +234,11 @@ async def red_control(callback: types.CallbackQuery):
         show_alert=False
     )
     data_module.set_report('red_control', callback.from_user.id)
-    proc = subprocess.Popen([r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\venv\Scripts\python',
-                             r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\red_control.py'])
+    python_exec = os.path.join(sys.prefix, 'bin', 'python')
+    # subprocess.call('Notifications.py', env=current_env)
+    subprocess.Popen([python_exec, 'red_control.py'])
+    # proc = subprocess.Popen([r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\venv\Scripts\python',
+    #                          r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\red_control.py'])
 
 
 @router.callback_query(F.data == "/start_control_mail")
@@ -246,8 +251,11 @@ async def red_control(callback: types.CallbackQuery):
         show_alert=False
     )
     data_module.set_report('control_mail', callback.from_user.id)
-    proc = subprocess.Popen([r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\venv\Scripts\python',
-                             r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\part2.py'])
+    python_exec = os.path.join(sys.prefix, 'bin', 'python')
+    # subprocess.call('Notifications.py', env=current_env)
+    subprocess.Popen([python_exec, 'part2.py'])
+    # proc = subprocess.Popen([r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\venv\Scripts\python',
+                             # r'C:\Users\ArsenevVD\Desktop\control_mail_2.1\DSA-main\part2.py'])
 
 
 # @router.callback_query(F.data == "/spd_2")

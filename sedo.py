@@ -33,7 +33,7 @@ def sogl_report(FIO, EXECUTOR_ID):
     date_now = datetime.strftime(datetime.now(), '%d.%m.%Y')
     url_auth = 'https://mosedo.mos.ru/auth.php?group_id=21'
 
-    with open(f'{os.getcwd()}/settings.json') as f:
+    with open(os.path.join(os.getcwd(), 'settings.json')) as f:
         settings = json.load(f)
         token = settings['token2']
         SEDOlog = settings['SEDOlog']
@@ -276,7 +276,7 @@ def sogl_report(FIO, EXECUTOR_ID):
             p.join()
 
         df_final = pd.concat(df_list)
-        df_final.to_excel('test_report_sogl.xlsx')
+        # df_final.to_excel('test_report_sogl.xlsx')
         # print(df_final)
         documents = df_final['doc_id'].to_list()
         queue = Queue()
@@ -324,13 +324,13 @@ def sogl_report(FIO, EXECUTOR_ID):
         # print(df_status)
         # df_final = pd.merge(df_final, df_status, on='doc_id', how='left')
         # df_final.drop(['Дата согла', 'Адресат', 'doc_id', 'link_id'], axis=1, inplace=True)
-        df_final.to_excel(os.getcwd()+f'\\sogl_report\\{FIO}_sogl_report.xlsx')
+        df_final.to_excel(os.path.join(os.getcwd(), 'sogl_report', f'{FIO}_sogl_report.xlsx'))
     else:
         print('DRUGOE')
         df_final = pd.DataFrame(columns=['Номер согла','Краткое содержание','na nomer','Срок МФ/Срок РГ','Срок РГ/Срок ОА','Срок исполнителя'])
-        df_final.to_excel(os.getcwd() + f'\\sogl_report\\{FIO}_sogl_report.xlsx')
+        df_final.to_excel(os.path.join(os.getcwd(), 'sogl_report', f'{FIO}_sogl_report.xlsx'))
     data_module.set_dnsid(DNSID)
-    return os.getcwd() + f'\\sogl_report\\{FIO}_sogl_report.xlsx'
+    return os.path.join(os.getcwd(), 'sogl_report', f'{FIO}_sogl_report.xlsx')
 
 
 def sogly(s, DNSID, page, queue):
@@ -1014,7 +1014,7 @@ def sogl_update(FIO, EXECUTOR_ID):
     url_kontrol = f'https://mosedo.mos.ru/auth.php?uri=%2Fstat%2Fcontrol_stats.details.php%3Ffixed%3D%26delegate_id%3D%26is_letter%3D%26report_name%3Dcontrol_stats%26ctl_type%255B0%255D%3D0%26ctl_type%255B1%255D%3D1%26later_type%3D0%26due_date_from%3D{d_start}%26due_date_until%3D{d_end}%26start_rdate%3D%26end_rdate%3D%26user%255B0%255D%3D0%26inv_user%255B0%255D%3D0%26executor%3D{EXECUTOR_ID}%26inv_executor%3D0%26result%3D%25D1%25F4%25EE%25F0%25EC%25E8%25F0%25EE%25E2%25E0%25F2%25FC%2B%25EE%25F2%25F7%25E5%25F2...'
     url_auth = 'https://mosedo.mos.ru/auth.php?group_id=21'
 
-    with open(r'C:\control_mail_2.1\settings.json') as f:
+    with open(os.path.join(os.getcwd(), 'settings.json')) as f:
         settings = json.load(f)
         token = settings['token2']
         SEDOlog = settings['SEDOlog']

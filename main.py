@@ -13,6 +13,7 @@ import config
 import subprocess
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
+
 async def main():
     bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage())
@@ -24,7 +25,7 @@ async def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
     current_env = os.environ.copy()
-    python_exec = os.path.join(sys.prefix, 'Scripts', 'python')
+    python_exec = os.path.join(sys.prefix, 'bin', 'python')
     # subprocess.call('Notifications.py', env=current_env)
     subprocess.Popen([python_exec, 'Notifications.py'])
     asyncio.run(main())

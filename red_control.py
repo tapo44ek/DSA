@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import datetime
 import re
 from datetime import datetime, timedelta
-import win32com.client as win32
+# import win32com.client as win32
 import pandas as pd
 import numpy as np
 import openpyxl as ox
@@ -26,6 +26,8 @@ import data_module
 from handlers import bot
 import asyncio
 from aiogram.types import Message, FSInputFile
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 async def info_msg(tg_id, text, last_msg_id):
@@ -157,6 +159,12 @@ async def info_msg(tg_id, text, last_msg_id):
 
 if __name__ == "__main__":
     last_msg_id = 0
+    download_folder = os.path.join(os.getcwd(), 'downloads', 'red_control')
+    if not os.path.exists(download_folder):
+        os.makedirs(download_folder)
+        with open(os.path.join(download_folder, 'file.txt'), 'w') as file:
+            file.write('')
+
     with open(os.path.join(os.getcwd(), 'settings.json')) as f:
         settings = json.load(f)
         print(settings)
@@ -208,13 +216,13 @@ if __name__ == "__main__":
     date3 = date3.split(sep='-')
     date33 = date3[2]+'.'+date3[1]+'.'+date3[0]
     date333 = date3[1]+'.'+date3[2]
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\'
+    # finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\'
 
-    if os.path.exists(finpath + 'Контроль писем общий') == False:
-        os.mkdir(finpath + 'Контроль писем общий')
+    if os.path.exists(os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий')) == False:
+        os.makedirs(os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий'))
         #os.rename()
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
-    foldername = finpath + "Контроль " + str(date111) + '-' + str(date333) + '\\'
+    finpath = os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий')
+    foldername = os.path.join(finpath, "Контроль " + str(date111) + '-' + str(date333))
     if os.path.exists(foldername) == False:
         os.mkdir(foldername)
         # bot.send_message(UserID, 'Создал папку для красного контроля')
@@ -226,16 +234,23 @@ if __name__ == "__main__":
     path = os.getcwd()
 
     r = os.listdir(os.path.join(workdir, 'income data', 'technical_data', 'red control'))
-    for i in range (len(r)):
+    for i in range(len(r)):
         try:
-            os.remove(str(os.path.join(workdir, 'income data', 'technical_data', 'red control'))+'\\'+str(r[i]))
+            os.remove(str(os.path.join(workdir, 'income data', 'technical_data', 'red control', str(r[i]))))
         except:
             pass
 
     year1 = 2020
     year2 = now.year
     chromedriver = str(path) + '/chromedriver.exe'
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {'profile.default_content_settings.popups': 0,
+             "download.default_directory": download_folder,
+             "directory_upgrade": True}
+    chrome_options.add_experimental_option('prefs', prefs)
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
     driver.get('https://mosedo.mos.ru/auth.php?uri=%2F')
     time.sleep(3)
     organization = driver.find_element(By.XPATH, '//*[@id="organizations"]')
@@ -246,6 +261,7 @@ if __name__ == "__main__":
     time.sleep(2)
     organization1 = driver.find_element(By.XPATH, '//*[@id="ui-id-1"]/li/a[text() = "Департамент городского имущества города Москвы"]')
     organization1.click()
+    time.sleep(2)
     user.send_keys(SEDOlog)
     time.sleep(3)
     user1 = driver.find_element(By.XPATH, '//*[@id="ui-id-2"]/li/a[text() = "'+ str(SEDOlog) +'"]')
@@ -268,11 +284,13 @@ if __name__ == "__main__":
         print("Timed out waiting for page to load")
     driver.find_element(By.XPATH, '//*[@id="start_date"]').click()
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.CONTROL, 'a')
+    # driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.COMMAND, 'a')
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(str(date22))
 
     driver.find_element(By.XPATH, '//*[@id="end_date"]').click()
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.CONTROL, 'a')
+    # driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.COMMAND, 'a')
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(str(date11))
 
@@ -306,8 +324,9 @@ if __name__ == "__main__":
             href = driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[5]/a').get_attribute('href')
             print (href)
             href = str(href)
+            driver.execute_script("window.open(arguments[0], '_blank');", href)
             #driver.execute_script("window.open("+ href +")")
-            driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[5]/a').send_keys(Keys.CONTROL, Keys.RETURN)
+            # driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[5]/a').send_keys(Keys.COMMAND, Keys.RETURN)
             b = driver.current_window_handle
             print(b)
             s = driver.window_handles
@@ -329,7 +348,7 @@ if __name__ == "__main__":
                     macroname = 'Красный контроль.xlsm'
                     polni = 'red control ' + str(z)
                     ########################################################################################################################################################################
-                    path = 'C:\\Users\\'+PCuser+'\\Downloads'
+                    path = download_folder
                     files = os.listdir(path)
                     files = [os.path.join(path, file) for file in files]
                     files = [file for file in files if os.path.isfile(file)]
@@ -346,8 +365,8 @@ if __name__ == "__main__":
     #                move_xl(polni, foldername, macroname, PCuser)
                     last_msg_id = asyncio.run(info_msg(UserID, 'Красный контроль часть ' + str(z), last_msg_id))
                     # bot.send_message(UserID, 'Красный контроль часть ' + str(z))
-        except:
-            print('OK')
+        except Exception as e:
+            print(e)
 
     #techpath2 = os.path.join(workdir, 'income data', 'technical_data', 'red control')
 
@@ -376,7 +395,7 @@ if __name__ == "__main__":
     #    df1 = pd.read_excel(str(path)+str(r[i]), sheet_name = 'Восстановл_Лист1')
     #    df = pd.concat([df,df1])
         #print (df)
-    print (df.info)
+    print(df.info)
 
     techpath2 = os.path.join(workdir, 'income data', 'technical_data', 'red control')
     #df = df.set_index(['№ п/п'])
@@ -419,12 +438,12 @@ if __name__ == "__main__":
     ws.column_dimensions['K'].width = 15
     wb.save(techpath2 + r'\красный контроль.xlsx')
     wb.close()
-    shutil.copy(workdir + '\\income data\\technical_data\\Красный контроль 2.xlsm', techpath2)
-    xl=win32.Dispatch("Excel.Application")
-    macroname = 'Красный контроль 2.xlsm'
-    xl.Workbooks.Open(os.path.abspath(techpath2 +'\\'+ macroname), ReadOnly=1)
-    xl.Application.Quit() # Comment this out if your excel script closes
-    del xl
+    # shutil.copy(workdir + '\\income data\\technical_data\\Красный контроль 2.xlsm', techpath2)
+    # xl=win32.Dispatch("Excel.Application")
+    # macroname = 'Красный контроль 2.xlsm'
+    # xl.Workbooks.Open(os.path.abspath(techpath2 +'\\'+ macroname), ReadOnly=1)
+    # xl.Application.Quit() # Comment this out if your excel script closes
+    # del xl
     dater = now.date()
     try:
         shutil.copy(techpath2 + r'\красный контроль.xlsx', foldername + 'Красный контроль ' + str(dater) + '.xlsx')
@@ -462,15 +481,15 @@ if __name__ == "__main__":
     date333 = date3[1]+'.'+date3[2]
     print (date1)
     print (date3)
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\'
-
-    if os.path.exists(finpath + 'Контроль писем общий') == False:
-        os.mkdir(finpath + 'Контроль писем общий')
-        #os.rename()
-    finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
-    foldername = finpath + "Контроль " + str(date333) + '-' + str(date111) + '\\'
-    if os.path.exists(foldername) == False:
-        os.mkdir(foldername)
+    # finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\'
+    #
+    # if os.path.exists(finpath + 'Контроль писем общий') == False:
+    #     os.mkdir(finpath + 'Контроль писем общий')
+    #     #os.rename()
+    # finpath = 'C:\\Users\\' + PCuser + '\\Desktop\\Контроль писем общий\\'
+    # foldername = finpath + "Контроль " + str(date333) + '-' + str(date111) + '\\'
+    # if os.path.exists(foldername) == False:
+    #     os.mkdir(foldername)
         # bot.send_message(UserID, 'Создал папку для предупредительного контроля')
         # bot.send_message(UserID, foldername)
 
@@ -485,8 +504,13 @@ if __name__ == "__main__":
             pass
     year1 = 2020
     year2 = now.year
-    chromedriver = str(path) + '/chromedriver.exe'
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    prefs = {'profile.default_content_settings.popups': 0,
+             "download.default_directory": download_folder,
+             "directory_upgrade": True}
+    chrome_options.add_experimental_option('prefs', prefs)
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     driver.get('https://mosedo.mos.ru/auth.php?uri=%2F')
     time.sleep(3)
     organization = driver.find_element(By.XPATH, '//*[@id="organizations"]')
@@ -497,6 +521,7 @@ if __name__ == "__main__":
     time.sleep(2)
     organization1 = driver.find_element(By.XPATH, '//*[@id="ui-id-1"]/li/a[text() = "Департамент городского имущества города Москвы"]')
     organization1.click()
+    time.sleep(2)
     user.send_keys(SEDOlog)
     time.sleep(3)
     user1 = driver.find_element(By.XPATH, '//*[@id="ui-id-2"]/li/a[text() = "'+ str(SEDOlog) +'"]')
@@ -518,11 +543,13 @@ if __name__ == "__main__":
     except:
         print("Timed out waiting for page to load")
     driver.find_element(By.XPATH, '//*[@id="start_date"]').click()
+    # driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.COMMAND, 'a')
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.CONTROL, 'a')
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="start_date"]').send_keys(str(date22))
 
     driver.find_element(By.XPATH, '//*[@id="end_date"]').click()
+    # driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.COMMAND, 'a')
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.CONTROL, 'a')
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(str(date11))
@@ -556,8 +583,9 @@ if __name__ == "__main__":
             href = driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[6]/a').get_attribute('href')
             print (href)
             href = str(href)
+            driver.execute_script("window.open(arguments[0], '_blank');", href)
             #driver.execute_script("window.open("+ href +")")
-            driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[6]/a').send_keys(Keys.CONTROL, Keys.RETURN)
+            # driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/table/tbody/tr['+ str(i) +']/td[6]/a').send_keys(Keys.CONTROL, Keys.RETURN)
             b = driver.current_window_handle
             print(b)
             s = driver.window_handles
@@ -579,7 +607,7 @@ if __name__ == "__main__":
                     driver.switch_to.window(b)
                     macroname = 'Красный контроль.xlsm'
                     polni = 'pred control ' + str(z)
-                    path = 'C:\\Users\\'+PCuser+'\\Downloads'
+                    path = download_folder
                     files = os.listdir(path)
                     files = [os.path.join(path, file) for file in files]
                     files = [file for file in files if os.path.isfile(file)]
@@ -625,7 +653,7 @@ if __name__ == "__main__":
     df['№ п/п'] = np.arange(1, 1 + len(df))
     namexl = 'предупредительный контроль.xlsx'
     #df['Дата поручения'] = df['Дата поручения'].dt.strftime('%d.%m.%Y')
-    df.to_excel(os.path.join(techpath2, namexl), index = False, engine = 'openpyxl')
+    df.to_excel(techpath2 + r'\предупредительный контроль.xlsx', index = False, sheet_name = 'sheet1', engine = 'openpyxl')
 
 
 
@@ -643,20 +671,20 @@ if __name__ == "__main__":
     ws.column_dimensions['K'].width = 15
     wb.save(techpath2 + r'\предупредительный контроль.xlsx')
     wb.close()
-    shutil.copy(workdir + '\\income data\\technical_data\\Предупредительный контроль 2.xlsm', techpath2)
-    xl=win32.Dispatch("Excel.Application")
-    macroname = 'Предупредительный контроль 2.xlsm'
-    xl.Workbooks.Open(os.path.abspath(techpath2 +'\\'+ macroname), ReadOnly=1)
-    xl.Application.Quit() # Comment this out if your excel script closes
-    del xl
+    # shutil.copy(workdir + '\\income data\\technical_data\\Предупредительный контроль 2.xlsm', techpath2)
+    # xl=win32.Dispatch("Excel.Application")
+    # macroname = 'Предупредительный контроль 2.xlsm'
+    # xl.Workbooks.Open(os.path.abspath(techpath2 +'\\'+ macroname), ReadOnly=1)
+    # xl.Application.Quit() # Comment this out if your excel script closes
+    # del xl
     dater = now.date()
 
 
     try:
-        shutil.copy(techpath2 + r'\предупредительный контроль.xlsx', foldername + 'Предупредительный контроль ' + str(dater) + '.xlsx')
+        shutil.copy(techpath2 + r'\предупредительный контроль.xlsx', os.path.join(foldername, 'Предупредительный контроль ' + str(dater) + '.xlsx'))
     except:
-        os.remove(foldername + 'Предупредительный контроль ' + str(dater) + '.xlsx')
-        shutil.copy(techpath2 + r'\предупредительный контроль.xlsx', foldername + 'Предупредительный контроль ' + str(dater) + '.xlsx')
+        os.remove(os.path.join(foldername, 'Предупредительный контроль ' + str(dater) + '.xlsx'))
+        shutil.copy(techpath2 + r'\предупредительный контроль.xlsx', os.path.join(foldername, 'Предупредительный контроль ' + str(dater) + '.xlsx'))
         last_msg_id = asyncio.run(info_msg(UserID, 'Предупредительный контроль завершен', last_msg_id))
     # bot.send_message(UserID, 'Предупредительный контроль успешно выполнен')
     print('FUCK YEAH')
@@ -677,8 +705,8 @@ if __name__ == "__main__":
           'InshakovaMN@mos.ru', 'BorisovaIN1@mos.ru']
 
     mail_date = dater.strftime('%d.%m.%Y')
-    predpath = foldername + 'Предупредительный контроль ' + str(dater) + '.xlsx'
-    redpath = foldername + 'Красный контроль ' + str(dater) + '.xlsx'
+    predpath = os.path.join(foldername, 'Предупредительный контроль ' + str(dater) + '.xlsx')
+    redpath = os.path.join(foldername, 'Красный контроль ' + str(dater) + '.xlsx')
     subject = 'Красный и предупредительный контроли ' + mail_date
     body = 'Доброе утро! \n \nПо состоянию на ' + mail_date + ' за Управлением ведения жилищного учета числятся просроченные обращения в количестве: ' + redmail + ' шт. \nИз них количество обращений, срок исполнения которых истек более 2 месяцев назад составляет: ' + redredmail + ' шт. \n \nВо избежание проблем в части нарушения исполнительской дисциплины в Управлении, прошу обратить особое внимание на данный контроль и усилить меры по исполнению и закрытию вышеуказанных обращений. \n \nВ случае наличия объективных причин для неисполнения обращения в срок, необходимо продлить контрольный срок по согласованию с начальником Управления.'
     time.sleep(3)
@@ -697,7 +725,7 @@ if __name__ == "__main__":
     k = 0
     ind = 0
 
-    SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
+    # SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
     asyncio.run(bot.send_message(UserID, 'Письмо направлено'))
     # send_email(recipients, subject, body, att_paths, cc)
     # while k < 3:

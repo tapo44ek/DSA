@@ -564,7 +564,7 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
 
     df_act_documents = df_act_documents.sort_values(by=['doc_date'])
     df_rubr = pd.read_excel(
-        os.getcwd() + '\\income data\\proc_targetss.xlsx')  #######################################################################################ИСПРАВИТЬ!
+        os.path.join(os.getcwd(),'income data', 'proc_targetss.xlsx'))  #######################################################################################ИСПРАВИТЬ!
 
     df_final = df_act_documents.merge(df_task_adapter, left_on='task_uuid', right_on='uuid', how='left')
     del df_task_adapter
@@ -673,13 +673,13 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
                 print(' zapusk ', i)
                 df_out = list_otkaz(tuple(data1))
                 result = pd.concat([result, df_out])
-                df_out.to_excel(f'C:\\Users\\ArsenevVD\\Downloads\\{str(i)}.xlsx')
+                # df_out.to_excel(f'C:\\Users\\ArsenevVD\\Downloads\\{str(i)}.xlsx')
                 data1 = []
                 z = 0
             i = i + 1
         result = pd.merge(df, result, left_on='ЕНО', right_on='process_instance_key', how='left')
 
-    with pd.ExcelWriter(f'C:\\Users\\{PCuser}\\Downloads\\dashboard {date_time}.xlsx') as writer:
+    with pd.ExcelWriter(os.path.join(os.getcwd(), 'export_data', 'dashboard', f'dashboard {date_time}.xlsx')) as writer:
         if need_first_list == 1:
             df_final.to_excel(writer, sheet_name='с приостановками')
         if need_text == 1:
@@ -687,7 +687,7 @@ def spd_2_download(email_, date_range_begin, date_range_end, sort_type, need_fir
         df_final = df_final.drop_duplicates(subset=['Номер заявки ДГИ'], keep='first')
         df_final.to_excel(writer, sheet_name='без дубликатов')
 
-    att = f'C:\\Users\\{PCuser}\\Downloads\\dashboard {date_time}.xlsx'
+    att = os.path.join(os.getcwd(), 'export_data', 'dashboard', f'dashboard {date_time}.xlsx')
     file = FSInputFile(att)
     asyncio.run(bot.send_document(send_id, file, caption=f'Выгрузка СПД 2 с {date_range_begin} по {date_range_end}'))
     try:
