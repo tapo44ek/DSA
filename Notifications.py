@@ -7,13 +7,13 @@ from aiogram import Bot
 from aiogram.enums import ParseMode
 import config
 import data_module
-from sedo import sogl_update
+from sedo import sogl_upd
 # from handlers import bot
 import asyncio
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 def send_not(FIO, id_tg, id_sedo):
-    asyncio.run(bot.send_message(chat_id=id_tg, text=sogl_update(FIO, id_sedo)))
+    asyncio.run(bot.send_message(chat_id=id_tg, text=sogl_upd(FIO, id_sedo)))
     try:
         asyncio.run(bot.session.close())
     except:
