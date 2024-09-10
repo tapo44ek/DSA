@@ -58,6 +58,7 @@ async def menu(msg: Message, state: FSMContext):
     await state.set_state(UserActions.menu)
 
 
+
 @router.callback_query(F.data == "/menu")
 async def helper_status(callback: types.CallbackQuery, state: FSMContext):
     role = data_module.check_admin(callback.from_user.id)

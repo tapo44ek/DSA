@@ -401,6 +401,7 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
                 lst_line_today.insert(0, '\n---------------------\nСоглы, запущенные сегодня:')
                 rez_today = '\n'.join(lst_line_today)
 
+
             if not df_final_older.empty:
                 lst_line_today = df_final_older['Номер согла'].to_list()
                 deadline_id = df_final_older['doc_id'].to_list()

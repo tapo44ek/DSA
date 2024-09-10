@@ -24,6 +24,7 @@ def send_not(FIO, id_tg, id_sedo):
         pass
 
 
+
 def force_notific(tg_id):
     data = data_module.get_sogl_info(tg_id)
     print(data)

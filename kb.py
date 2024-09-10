@@ -29,6 +29,7 @@ settings_notifics = [
     [InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="/menu")]
 ]
 
+
 menu = InlineKeyboardMarkup(inline_keyboard=menu)
 menu_ruk = InlineKeyboardMarkup(inline_keyboard=menu_ruk)
 settings = InlineKeyboardMarkup(inline_keyboard=settings)

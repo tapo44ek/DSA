@@ -350,6 +350,7 @@ def check_admin(tg_id_):
         return 0
 
 
+
 def set_dnsid(dnsid_):
     db_path_ = f'{os.getcwd()}/data/DSA.db'
     conn_ = sqlite3.connect(str(db_path_))
