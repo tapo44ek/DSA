@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 import datetime
 from datetime import datetime
@@ -83,6 +84,10 @@ def rnd_news(text):
 
 
 if __name__ == "__main__":
-    notific()
+    if len(sys.argv) > 1:
+        rnd_news(sys.argv[1])
+    else:
+        notific()
+
     # force_notific(260399228)
     # rnd_news('Проверка рассылки')
