@@ -27,7 +27,7 @@ import re
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 
 
-def sogl_upd(FIO, EXECUTOR_ID):
+def sogl_upd(FIO, EXECUTOR_ID, tg_id):
     DNSID = data_module.get_dnsid() #data_module.get_dnsid()  ##wMsWJe-80daXYVWU4d8u_FA  ##w3YG8nxy3qvMCbxDc5lUM5Q
     DNSID1 = DNSID
     warnings.filterwarnings('ignore')
@@ -317,10 +317,15 @@ def sogl_upd(FIO, EXECUTOR_ID):
             print(df_deadline_today_n_older.info)
             print(df_deadline_today_n_older.info())
             a = datetime.now()
-            df_deadline_today_n_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] <= a]
+            deadline_tom = a + timedelta(days=1)
+            df_deadline_today_n_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] <= deadline_tom]
             df_deadline_today_n_older.sort_values(by='срок РГ', ascending=False, inplace=True)
+            df_deadline_tom = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == deadline_tom]
             df_deadline_today = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == a]
             df_deadline_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] < a]
+
+            #Добавить дедлайн завтрашнего дня
+
             delete_list = []
             list1v = df_deadline_today['Номер согла'].to_list()
             for item in list1v:
@@ -328,6 +333,10 @@ def sogl_upd(FIO, EXECUTOR_ID):
             list1v = df_deadline_older['Номер согла'].to_list()
             for item in list1v:
                 delete_list.append(item)
+            list1v = df_deadline_tom['Номер согла'].to_list()
+            for item in list1v:
+                delete_list.append(item)
+
             print(delete_list)
             df_final = df_final.loc[~df_final['Номер согла'].isin(delete_list)]
             df_final_today = df_final.loc[df_final['Дата согла'] == datetime.strftime(datetime.now(), '%d.%m.%Y')]
@@ -336,10 +345,21 @@ def sogl_upd(FIO, EXECUTOR_ID):
             df_deadline_today_n_older.to_excel(os.path.join(os.getcwd(), 'export_deadlines.xlsx'))
             print(df_final_older.info)
             line = 'Соглы, требующие Вашего внимания, от новых к старым:'
-            rez_today = '\n'
-            rez_older = '\n'
-            rez_dead = '\n'
-            rez_dead_today = '\n'
+            rez_today = ''
+            rez_older = ''
+            rez_dead = ''
+            rez_dead_today = ''
+            rez_dead_tom = ''
+
+            if not df_deadline_tom.empty:
+                deadline_line = df_deadline_tom['Номер согла'].to_list()
+                deadline_id = df_deadline_tom['doc_id'].to_list()
+                for i in range(len(deadline_line)):
+                    href_new = template + str(deadline_id[i])
+                    deadline_line[i] = str(i + 1) + ') ' + f"<a href='{href_new}'>{deadline_line[i]}</a>"
+
+                deadline_line.insert(0, '\n---------------------\nСоглы к письмам со сроком завтра:')
+                rez_dead_tom = '\n'.join(deadline_line)
 
             if not df_deadline_today.empty:
                 deadline_line = df_deadline_today['Номер согла'].to_list()
@@ -402,7 +422,18 @@ def sogl_upd(FIO, EXECUTOR_ID):
                 #
                 # lst_line_older.insert(0, '\n---------------------\nСоглы, запущенные вчера и ранее:')
                 # rez_older = '\n'.join(lst_line_older)
-            rez = line + rez_dead_today + rez_dead + rez_today + rez_older
+
+            '''
+            Вот тут пишем типо "Если этот айди не в должности из списка, то ответ - полная информация, иначе - только сроки"
+            '''
+            title_list = ['Руководитель',
+                          'Первый заместитель руководителя',
+                          'Заместитель руководителя',
+                          'Начальник управления']
+            if data_module.get_title(tg_id) in title_list:
+                rez = line + rez_dead_tom + rez_dead_today + rez_dead
+            else:
+                rez = line + rez_dead_tom + rez_dead_today + rez_dead + rez_today + rez_older
             del line
 
             if len(rez) > 1023:

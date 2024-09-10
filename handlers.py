@@ -15,6 +15,7 @@ import subprocess
 import SPD2_download
 import likhach_report
 import multiprocessing as mp
+from Notifications import force_notific
 
 router = Router()
 
@@ -49,20 +50,40 @@ async def start_handler(msg: Message):
 @router.message(F.text == "◀️ Выйти в меню")
 async def menu(msg: Message, state: FSMContext):
     data_module.chat_checker(msg.from_user.id, msg.chat.id)
-    await msg.answer(text.menu, reply_markup=kb.menu)
+    role = data_module.check_admin(msg.from_user.id)
+    if role == 2:
+        await msg.answer(text.menu, reply_markup=kb.menu_ruk)
+    else:
+        await msg.answer(text.menu, reply_markup=kb.menu)
     await state.set_state(UserActions.menu)
 
 
 @router.callback_query(F.data == "/menu")
 async def helper_status(callback: types.CallbackQuery, state: FSMContext):
-
-    await callback.message.answer(text.menu, reply_markup=kb.menu)
+    role = data_module.check_admin(callback.from_user.id)
+    if role == 2:
+        await callback.message.answer(text.menu, reply_markup=kb.menu_ruk)
+    else:
+        await callback.message.answer(text.menu, reply_markup=kb.menu)
     # await callback.message.delete()
     await state.set_state(UserActions.menu)
     await callback.answer(
         text="Успешно",
         show_alert=False
     )
+
+
+@router.callback_query(F.data == "/force_update")
+async def force_update(callback: types.CallbackQuery, state: FSMContext):
+    role = data_module.check_admin(callback.from_user.id)
+    await callback.message.answer('Обновление запущено, ожидайте ответ в течение пары минут', reply_markup=kb.iexit_kb)
+    # await callback.message.delete()
+    await callback.answer(
+        text="Успешно",
+        show_alert=False
+    )
+    p = mp.Process(target=force_notific, args=(callback.from_user.id,), )
+    p.start()
 
 
 @router.callback_query(F.data == "/phone_helper")
@@ -190,9 +211,15 @@ async def menu(bot: bot):
 async def helper_status(callback: types.CallbackQuery, state: FSMContext):
     print(callback.from_user.id)
     print(data_module.check_admin(callback.from_user.id))
+    role = data_module.check_admin(callback.from_user.id)
+    if role == 1:
+        await callback.message.answer(text.settings, reply_markup=kb.settings_adm)
+    else:
+        await callback.message.answer(text.settings, reply_markup=kb.settings)
+    await state.set_state(UserActions.menu)
+
     await state.set_state(UserActions.settings)
     # await callback.message.delete()
-    await callback.message.answer(text.settings, reply_markup=kb.settings)
     await callback.answer(
         text="Успешно",
         show_alert=False

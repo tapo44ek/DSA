@@ -1,3 +1,4 @@
+import logging
 import time
 import datetime
 from datetime import datetime
@@ -7,13 +8,28 @@ from aiogram import Bot
 from aiogram.enums import ParseMode
 import config
 import data_module
+import kb
 from sedo import sogl_upd
 # from handlers import bot
 import asyncio
-
+logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s")
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+
+
 def send_not(FIO, id_tg, id_sedo):
-    asyncio.run(bot.send_message(chat_id=id_tg, text=sogl_upd(FIO, id_sedo)))
+    asyncio.run(bot.send_message(chat_id=id_tg, text=sogl_upd(FIO, id_sedo, id_tg), reply_markup=kb.iexit_kb))
+    try:
+        asyncio.run(bot.session.close())
+    except:
+        pass
+
+
+def force_notific(tg_id):
+    data = data_module.get_sogl_info(tg_id)
+    print(data)
+    a = data['Worker'].split()[0] + ' ' + data['Worker'].split()[1][0] + '.' + data['Worker'].split()[2][0] + '.'
+
+    asyncio.run(bot.send_message(chat_id=tg_id, text=sogl_upd(a, data['SEDO_id'], tg_id), reply_markup=kb.iexit_kb))
     try:
         asyncio.run(bot.session.close())
     except:
@@ -57,5 +73,15 @@ def notific():
     return
 
 
+def rnd_news(text):
+    b = data_module.user_list()
+    print(b)
+    for item in b:
+        asyncio.run(bot.send_message(chat_id=item['TG_id'], text=text))
+        asyncio.run(bot.session.close())
+
+
 if __name__ == "__main__":
     notific()
+    # force_notific(260399228)
+    # rnd_news('Проверка рассылки')

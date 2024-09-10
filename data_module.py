@@ -2,13 +2,73 @@ import sqlite3
 import os
 import re
 import time
-
+import numpy as np
 import pandas as pd
 import logging
 import text
 from datetime import datetime
 logging.basicConfig(level=logging.INFO, filename="py_log.log",
                     filemode="a", format="%(asctime)s %(levelname)s %(message)s")
+
+
+def user_list():
+    bd_path_ = f'{os.getcwd()}/data/DSA.db'
+    search_column_ = 'WorkersTitle'
+    conn_ = sqlite3.connect(str(bd_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT TG_id FROM users WHERE TG_chat_id > 0;"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+            # print(result_)
+    else:
+        result_.append({'TG_id': "Данные не найдены"})
+    return result_
+
+
+def get_sogl_info(tg_id_):
+    bd_path_ = f'{os.getcwd()}/data/DSA.db'
+    search_column_ = 'WorkersTitle'
+    conn_ = sqlite3.connect(str(bd_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT TG_id, SEDO_id, Worker FROM users WHERE TG_id = {tg_id_}"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+            # print(result_)
+    else:
+        result_.append({'WorkersTitle': "Данные не найдены"})
+    return result_[0]
+
+
+def get_title(tg_id_):
+    bd_path_ = f'{os.getcwd()}/data/DSA.db'
+    search_column_ = 'WorkersTitle'
+    conn_ = sqlite3.connect(str(bd_path_))
+    conn_.row_factory = sqlite3.Row
+    cur_ = conn_.cursor()
+    select_query_ = f"SELECT WorkersTitle FROM users WHERE TG_id = {tg_id_}"
+    cur_.execute(select_query_)
+    rows_ = cur_.fetchall()
+    result_ = []
+    if rows_:
+        for row_ in rows_:
+            row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+            result_.append(row_as_dict_)
+            # print(result_)
+    else:
+        result_.append({'WorkersTitle': "Данные не найдены"})
+    return result_[0]['WorkersTitle']
 
 
 def get_email(tg_id_):
@@ -25,7 +85,7 @@ def get_email(tg_id_):
         for row_ in rows_:
             row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
             result_.append(row_as_dict_)
-            print(result_)
+            # print(result_)
     else:
         result_.append("Данные не найдены")
     return result_[0]['WorkMail']
@@ -194,8 +254,8 @@ def whoami(tg_id_):
 def search(search_, tg_id_):
     logging.info(f'{search_sender(tg_id_)} ищет {str(search_)}')
     bd_path_ = f'{os.getcwd()}/data/DSA.db'
-    columns_ = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail', 'MainMobilePhone', 'TG_id',
-                'OrganizationDevelopment1Calc', 'WorkersTitleCalc', 'UPRAVLENIE1Calc', 'TG_chat_id']
+    columns_ = ['ID', 'Worker', 'Kabinet', 'PhoneNumber', 'WorkMail',
+                'TG_id', 'WorkersTitle', 'WorkPlace_id', 'TG_chat_id']
     worker_ = f'tg_id_::{tg_id_}'
     if '::' in worker_:
         worker_ = int(worker_.split('::')[1])
@@ -205,9 +265,24 @@ def search(search_, tg_id_):
     if a[0] == 'Данные не найдены':
         reply = 'Данные не найдены'
     else:
+        work_place_id = a[0]['WorkPlace_id']
+        conn_ = sqlite3.connect(str(bd_path_))
+        conn_.row_factory = sqlite3.Row
+        cur_ = conn_.cursor()
+        select_query_ = f"SELECT * FROM departments WHERE ID = {a[0]['WorkPlace_id']}"
+        cur_.execute(select_query_)
+        rows_ = cur_.fetchall()
+        result_ = []
+        if rows_:
+            for row_ in rows_:
+                row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
+                result_.append(row_as_dict_)
+        else:
+            result_.append({'Otdel':"Данные не найдены", 'Upravlenie':'Данные не найдены'})
+        print(result_)
         reply = text.whoami.format(fio=a[0]['Worker'], phone=a[0]['PhoneNumber'], email=a[0]['WorkMail'],
-                                   cabinet=a[0]['Kabinet'], Worker_type=a[0]['WorkersTitleCalc'],
-                                   otdel=a[0]['OrganizationDevelopment1Calc'], upravlenie=a[0]['UPRAVLENIE1Calc'])
+                                   cabinet=a[0]['Kabinet'], Worker_type=a[0]['WorkersTitle'],
+                                   otdel=result_[0]['Otdel'], upravlenie=result_[0]['Upravlenie'])
     return reply
 
 
@@ -266,11 +341,11 @@ def check_admin(tg_id_):
     conn_ = sqlite3.connect(str(db_path_))
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
-    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{int(tg_id_)}' AND admin_int = '1'"
+    select_query_ = f"SELECT Worker, TG_id, admin_int FROM users WHERE TG_id = '{int(tg_id_)}'"
     cur_.execute(select_query_)
     rows_ = cur_.fetchall()
     if rows_:
-        return 1
+        return rows_[0][2]
     else:
         return 0
 
@@ -372,13 +447,16 @@ def notification_search(time_):
     answer_1_ = []
     result_ = []
     if rows_:
+        print(rows_)
         for row_ in rows_:
             row_as_dict_ = dict(row_)  # Преобразование объекта sqlite3.Row в словарь
             result_.append(row_as_dict_)
         print(result_)
         for item_ in result_:
-            if time_ in item_['notification_time']:
-                answer_0_.append(item_)
+            print(item_)
+            if item_['notification_time'] is not None:
+                if time_ in item_['notification_time']:
+                    answer_0_.append(item_)
                 # if item_['notification_type'] == 1:
                 #     answer_1_.append(item_)
                 # if item_['notification_type'] == 0:
@@ -444,5 +522,35 @@ def set_notification(tg_id_, notification_):
 
 
 if __name__ == '__main__':
-    a = 1
+    a=1
+    # df = pd.read_excel('/Users/viktor/Downloads/Пользователи.xlsx')
+    # df = df.replace({np.nan: None})
+    #
+    # # Convert DataFrame rows into a list of tuples for bulk insert
+    # args = list(df.itertuples(index=False, name=None))
+    # # Prepare the arguments string for the SQL query
+    # try:
+    #     # Prepare the arguments string for the SQL query
+    #     args_str = ",".join(
+    #         "({})".format(
+    #             ", ".join(
+    #                 "'{}'".format(x.replace("'", "''")) if isinstance(x, str) else "NULL" if x is None else str(x)
+    #                 for x in arg
+    #             )
+    #         )
+    #         for arg in args
+    #     )
+    # except Exception as e:
+    #     print(e)
+    # db_path_ = f'{os.getcwd()}/data/DSA.db'
+    # conn_ = sqlite3.connect(str(db_path_))
+    # conn_.row_factory = sqlite3.Row
+    # cur_ = conn_.cursor()
+    # columns_query_ = f"INSERT INTO users (ID, Worker, WorkPlace_id, WorkersTitle, PhoneNumber, WorkMail, Kabinet, SEDO_id, TG_id, TG_chat_id, admin_int, notification_time) VALUES {args_str}"
+    # # print(columns_query_)
+    # # Выполнение запроса
+    # cur_.execute(columns_query_)
+    # conn_.commit()
+    # cur_.close()
+    # conn_.close()
 

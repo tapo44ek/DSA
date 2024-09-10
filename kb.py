@@ -1,13 +1,25 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 menu = [
-    [InlineKeyboardButton(text="📝 СЭДО", callback_data="/sedo")],
+    [InlineKeyboardButton(text="📝 Мои соглы", callback_data="/force_update")],
     [InlineKeyboardButton(text="🔎 Телефонный справочник", callback_data="/phone_helper")],
-    [InlineKeyboardButton(text="СПД", callback_data="/spd")],
-    [InlineKeyboardButton(text="💳 Настройки", callback_data="/settings")]
+    [InlineKeyboardButton(text="📝 СЭДО", callback_data="/sedo")],
+    [InlineKeyboardButton(text="📝 СПД", callback_data="/spd")],
+    [InlineKeyboardButton(text="🛠️ Настройки", callback_data="/settings")]
+]
+
+menu_ruk = [
+    [InlineKeyboardButton(text="📝 Мои соглы", callback_data="/force_update")],
+    [InlineKeyboardButton(text="🔎 Телефонный справочник", callback_data="/phone_helper")],
+    [InlineKeyboardButton(text="🛠️ Настройки", callback_data="/settings")]
+]
+
+settings_adm = [
+    [InlineKeyboardButton(text="📝 Внести изменения в базу", callback_data="/base_change")],
+    [InlineKeyboardButton(text="📝 Посмотреть напоминания", callback_data="/notification_times")],
+    [InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="/menu")]
 ]
 
 settings = [
-    [InlineKeyboardButton(text="📝 Внести изменения в базу", callback_data="/base_change")],
     [InlineKeyboardButton(text="📝 Посмотреть напоминания", callback_data="/notification_times")],
     [InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="/menu")]
 ]
@@ -18,7 +30,9 @@ settings_notifics = [
 ]
 
 menu = InlineKeyboardMarkup(inline_keyboard=menu)
+menu_ruk = InlineKeyboardMarkup(inline_keyboard=menu_ruk)
 settings = InlineKeyboardMarkup(inline_keyboard=settings)
+settings_adm = InlineKeyboardMarkup(inline_keyboard=settings_adm)
 
 exit_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="◀️ Выйти в меню")]], resize_keyboard=True)
 
