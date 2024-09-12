@@ -757,7 +757,7 @@ if __name__ == '__main__':
     f = "Контроль " + str(date111) + '-' + str(date222)
     filename = f'Контроль {date111}-{date222}.xlsx'
 
-    att = make_file(f, filename)
+    att = make_file(os.path.join(os.getcwd(), 'export_data', 'Контроль писем общий', f), filename)
 
 
     files = os.listdir(os.path.join(folder_from, f))
