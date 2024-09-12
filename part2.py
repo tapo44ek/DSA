@@ -9,6 +9,9 @@ from datetime import datetime
 from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
 import json
+
+from openpyxl.reader.excel import load_workbook
+from openpyxl.styles import Border, Side
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -41,6 +44,100 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import aiogram
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+
+
+def make_file(path, filename):
+    df_M = pd.read_excel(os.path.join(path, 'М.xlsx'))
+    df_M['№, дата регистрации'] = df_M['№, дата регистрации'].apply(lambda x: x.split(' ')[0])
+    df_B = pd.read_excel(os.path.join(path, 'Б.xlsx'))
+    df_B['№, дата регистрации'] = df_B['№, дата регистрации'].apply(lambda x: x.split(' ')[0])
+    df_Shtatka = pd.read_excel(os.path.join(path, '2023.01.17 Штатка по блоку БРГ.xlsx'))
+    print(df_M.columns)
+    df_final = df_B
+    # df_final['Срок ОА'] = None
+    df_final.rename(columns={'Срок исполнения': 'Срок РГ'}, inplace=True)
+    df_M.rename(columns={'Срок исполнения': 'Срок ОА'}, inplace=True)
+    print(df_M.columns)
+    df_final = df_final.merge(df_M[['№, дата регистрации', 'Срок ОА', 'Конечный исполнитель ветки резолюций']],
+                              how='left', on='№, дата регистрации')
+    # df_final['№, дата регистрации'] = df_final['№, дата регистрации'].apply(lambda x: x.split(' ')[0])
+    print(df_final.head(5))
+    list_delete = df_B['№, дата регистрации'].to_list()
+    df_M.rename(columns={'Конечный исполнитель ветки резолюций': 'Конечный исполнитель ветки резолюций_x'},
+                inplace=True)
+    df_final = pd.concat([df_final, df_M[~df_M['№, дата регистрации'].isin(list_delete)]], axis=0)
+
+    # df_final.drop_duplicates(subset=['', ''], inplace=True)
+    # Функция для замены значений
+    df_final['Конечный исполнитель ветки резолюций_x'] = np.where(
+        ~df_final['Конечный исполнитель ветки резолюций_y'].isna(),
+        df_final['Конечный исполнитель ветки резолюций_y'], df_final['Конечный исполнитель ветки резолюций_x'])
+    # df_final['Конечный исполнитель ветки резолюций_x'] = df_final.apply(lambda row: row['Конечный исполнитель ветки резолюций_y'] if row['Конечный исполнитель ветки резолюций_y'] is not None else row['Конечный исполнитель ветки резолюций_x'], axis=1)
+
+    df_final = df_final.merge(df_Shtatka[['ФИО короткий', 'Руководитель Зам']],
+                              how='left', left_on='Конечный исполнитель ветки резолюций_x', right_on='ФИО короткий')
+
+    list_workers = ['Мусиенко Ольга Александровна', 'Силуянова Юлия Павловна',
+                    'Гибадулин Марат Мансурович', 'Лихач Ирина Андреевна']
+
+    df_final = df_final[df_final['Руководитель Зам'].isin(list_workers)]
+    df_final.drop(columns=['Конечный исполнитель ветки резолюций_y', 'ФИО короткий'], inplace=True)
+    df_final['Срок РГ'] = pd.to_datetime(df_final['Срок РГ'], dayfirst=True)
+    df_final['Срок ОА'] = pd.to_datetime(df_final['Срок ОА'], dayfirst=True)
+    print(df_final.columns)
+    df_final.rename(columns={'Конечный исполнитель ветки резолюций_x': 'Исполнитель блока',
+                             'Руководитель Зам': 'Руководитель сотрудника'}, inplace=True)
+    new_order = ['№ п/п', '№, дата регистрации', 'Откуда поступило, автор обращения',
+                 '№, дата документа', 'Краткое содержание, что поручено', 'Куратор',
+                 'Срок РГ', 'Срок ОА', 'Исполнитель блока', 'Руководитель сотрудника']
+    df_final = df_final[['№ п/п', '№, дата регистрации', 'Откуда поступило, автор обращения',
+                         '№, дата документа', 'Краткое содержание, что поручено', 'Куратор',
+                         'Срок РГ', 'Срок ОА', 'Исполнитель блока', 'Руководитель сотрудника']]
+    df_final.sort_values(by=['Срок РГ', 'Срок ОА'], inplace=True)
+    df_final.drop_duplicates(subset=['№, дата регистрации', 'Исполнитель блока'], inplace=True)
+    df_final['№ п/п'] = range(1, len(df_final) + 1)
+
+    output_path = os.path.join(path, str(filename))
+    df_final.to_excel(output_path, index=False)
+
+    # Открываем файл Excel с помощью openpyxl
+    wb = load_workbook(output_path)
+    ws = wb.active
+
+    # Установить ширину столбцов
+    column_widths = {
+        'A': 6,
+        'B': 16,
+        'C': 16,
+        'D': 16,
+        'E': 40,
+        'F': 16,  # Ширина для столбца 'Name'
+        'G': 18,  # Ширина для столбца 'Date'
+        'H': 18,
+        'I': 18,
+        'J': 25,  # Ширина для столбца 'Sales'
+    }
+
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+
+    # Создание стиля границ
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+
+    # Применение границ ко всем ячейкам
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+        for cell in row:
+            cell.border = thin_border
+
+    # Сохранение изменений
+    wb.save(output_path)
+
+    print("Файл успешно сохранён с заданной шириной столбцов и границами.")
+    return output_path
+
 
 def sogly(s, DNSID, page, queue):
     url = f'https://mosedo.mos.ru/document.php?perform_search=1&DNSID={DNSID}&page={page}'
@@ -658,6 +755,11 @@ if __name__ == '__main__':
     print('\n')
     print(de - ds)
     f = "Контроль " + str(date111) + '-' + str(date222)
+    filename = f'Контроль {date111}-{date222}.xlsx'
+
+    att = make_file(f, filename)
+
+
     files = os.listdir(os.path.join(folder_from, f))
     archive = 'mail_control.zip'
     with zipfile.ZipFile(archive, "w") as zf:
@@ -665,7 +767,7 @@ if __name__ == '__main__':
             file_path = os.path.join(folder_from, f, file)
             zf.write(file_path, arcname=os.path.relpath(file_path, folder_from))
     last_msg_id = asyncio.run(info_msg(UserID, "Выгрузка завершена", last_msg_id))
-    att_paths = ['mail_control.zip']
+    att_paths = ['mail_control.zip', att]
     for i in range(len(att_paths)):
         print(att_paths[i])
         file = FSInputFile(att_paths[i])
