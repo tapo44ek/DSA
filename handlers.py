@@ -42,8 +42,17 @@ class UserActions(StatesGroup):
 async def handler(message: Message, command: CommandObject):
     data_module.chat_checker(message.from_user.id, message.chat.id)
     args = command.args
-    payload = decode_payload(args)
-    await message.answer(f"Your payload: {payload}")
+    await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+    if args == 'start_update':
+        role = data_module.check_admin(message.from_user.id)
+        await message.answer('Обновление запущено, ожидайте ответ в течение пары минут',
+                                      reply_markup=kb.iexit_kb)
+        # await callback.message.delete()
+
+        p = mp.Process(target=force_notific, args=(message.from_user.id,), )
+        p.start()
+    # payload = decode_payload(args)
+    # await message.answer(f"Your payload: {args}")
 
 
 @router.message(Command("start"))
@@ -52,7 +61,6 @@ async def start_handler(msg: Message):
     await bot.send_message(msg.from_user.id, "Привет")
 
 
-@router.message(Command("menu"))
 @router.message(F.text == "Меню")
 @router.message(F.text == "Выйти в меню")
 @router.message(F.text == "◀️ Выйти в меню")
