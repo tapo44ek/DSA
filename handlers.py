@@ -1,6 +1,7 @@
 import os
 import sys
-
+from aiogram.utils.deep_linking import decode_payload
+from aiogram.filters import CommandStart, CommandObject
 from aiogram import F, Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.types import Message, FSInputFile
@@ -34,10 +35,16 @@ class UserActions(StatesGroup):
     SPD2_add = State()
     SPD2_text = State()
     last_menu_message_id = State()
-
-
-
 # bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+
+
+@router.message(CommandStart(deep_link=True))
+async def handler(message: Message, command: CommandObject):
+    data_module.chat_checker(message.from_user.id, message.chat.id)
+    args = command.args
+    payload = decode_payload(args)
+    await message.answer(f"Your payload: {payload}")
+
 
 @router.message(Command("start"))
 async def start_handler(msg: Message):
