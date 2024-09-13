@@ -17,6 +17,8 @@ import SPD2_download
 import likhach_report
 import multiprocessing as mp
 from Notifications import force_notific
+import re
+
 
 router = Router()
 
@@ -51,6 +53,10 @@ async def handler(message: Message, command: CommandObject):
 
         p = mp.Process(target=force_notific, args=(message.from_user.id,), )
         p.start()
+    pattern = r'[a-zA-Z0-9]+-[a-zA-Z0-9]+-'
+    if re.match(pattern, args):
+        data_module.add_user(message.from_user.id, args)
+        await message.answer(f"Поздравляем с регистрацией", reply_markup=kb.iexit_kb)
     # payload = decode_payload(args)
     # await message.answer(f"Your payload: {args}")
 
