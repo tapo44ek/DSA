@@ -45,6 +45,7 @@ async def start_handler(msg: Message):
     await bot.send_message(msg.from_user.id, "Привет")
 
 
+@router.message(Command("menu"))
 @router.message(F.text == "Меню")
 @router.message(F.text == "Выйти в меню")
 @router.message(F.text == "◀️ Выйти в меню")
