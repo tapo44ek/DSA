@@ -353,13 +353,14 @@ def check_admin(tg_id_):
 def add_user(tg_id, args):
     mail = args.split('-')[0]
     SEDO_id = args.split('-')[1]
+    admin = args.split('-')[2]
     db_path_ = f'{os.getcwd()}/data/DSA.db'
     conn_ = sqlite3.connect(str(db_path_))
     conn_.row_factory = sqlite3.Row
     cur_ = conn_.cursor()
     print(mail)
     print(SEDO_id)
-    columns_query_ = f"UPDATE users SET TG_id = {tg_id}, TG_chat_id = {tg_id}, SEDO_id = {SEDO_id} WHERE WorkMail = '{mail}@mos.ru'"
+    columns_query_ = f"UPDATE users SET TG_id = {tg_id}, TG_chat_id = {tg_id}, SEDO_id = {SEDO_id}, admin_int = {admin} WHERE WorkMail = '{mail}@mos.ru'"
     # print(columns_query_)
     # Выполнение запроса
     cur_.execute(columns_query_)
