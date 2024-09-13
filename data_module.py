@@ -359,7 +359,7 @@ def add_user(tg_id, args):
     cur_ = conn_.cursor()
     print(mail)
     print(SEDO_id)
-    columns_query_ = f"UPDATE users SET TG_id = {tg_id}, TG_chat_id = {tg_id}, SEDO_id = {SEDO_id} WHERE WorkMail = '{mail}'"
+    columns_query_ = f"UPDATE users SET TG_id = {tg_id}, TG_chat_id = {tg_id}, SEDO_id = {SEDO_id} WHERE WorkMail = '{mail}@mos.ru'"
     # print(columns_query_)
     # Выполнение запроса
     cur_.execute(columns_query_)
