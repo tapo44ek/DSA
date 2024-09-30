@@ -1,3 +1,4 @@
+import asyncio
 import sqlite3
 import os
 import re
@@ -5,10 +6,42 @@ import time
 import numpy as np
 import pandas as pd
 import logging
+import kb
 import text
 from datetime import datetime
+import subprocess
+import os
+from handlers import bot
 logging.basicConfig(level=logging.INFO, filename="py_log.log",
                     filemode="a", format="%(asctime)s %(levelname)s %(message)s")
+
+
+def renovation_update(tg_id):
+
+    back_venv = '/home/dsa-dgi/programs/renovation/.venv/bin/python'
+
+    # Путь к скрипту, который нужно выполнить
+    # back_script = '/root/back/main.py'
+
+    # Рабочая директория проекта back
+    back_workdir = '/home/dsa-dgi/programs/renovation'
+
+    # Запуск скрипта асинхронно с передачей аргументов
+    result = subprocess.run(
+        [back_venv, '-c', f'from backend import update_all_data; print(update_all_data())'],
+        cwd=back_workdir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    if result.returncode == 0:
+        # Присваиваем результат функции main() переменной param
+        param = result.stdout.strip()
+        print(f"param = {param}")  # Выводим для проверки
+    else:
+        param = result.stderr.strip()
+        print(f"Error from back.main: {result.stderr.strip()}")
+    asyncio.run(bot.send_message(tg_id, param, kb.iexit_kb))
 
 
 def user_list():

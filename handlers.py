@@ -67,6 +67,16 @@ async def start_handler(msg: Message):
     await bot.send_message(msg.from_user.id, "Привет")
 
 
+@router.message(Command("update_all_data"))
+async def start_handler(msg: Message):
+    subprocess.Popen(
+        ['python3', '-c', f'from data_module import renovation_update; renovation_update("{msg.from_user.id}")'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    await bot.send_message(msg.from_user.id, "Выгрузка запущена, примерное время обновления - 1 час")
+
+
 @router.message(F.text == "Меню")
 @router.message(F.text == "Выйти в меню")
 @router.message(F.text == "◀️ Выйти в меню")
