@@ -71,8 +71,8 @@ async def start_handler(msg: Message):
 async def start_handler(msg: Message):
     subprocess.Popen(
         ['python3', '-c', f'from data_module import renovation_update; renovation_update("{msg.from_user.id}")'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stdout=None,
+        stderr=None
     )
     await bot.send_message(msg.from_user.id, "Выгрузка запущена, примерное время обновления - 1 час")
 

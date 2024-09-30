@@ -25,13 +25,13 @@ def renovation_update(tg_id):
 
     # Рабочая директория проекта back
     back_workdir = '/home/dsa-dgi/programs/renovation'
-
+    print('renovation_update is working')
     # Запуск скрипта асинхронно с передачей аргументов
     result = subprocess.run(
         [back_venv, '-c', f'from backend import update_all_data; print(update_all_data())'],
         cwd=back_workdir,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=None,
+        stderr=None,
         text=True
     )
     if result.returncode == 0:
