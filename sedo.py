@@ -7,6 +7,7 @@ Created on Wed Jul  5 08:35:31 2023
 import os
 
 import certifi
+import numpy as np
 import requests
 from aiogram import Bot
 from aiogram.enums import ParseMode
@@ -1037,7 +1038,10 @@ def sogly(s, DNSID, page, queue):
         doc_number[i] = doc_number[i].lstrip()
         doc_number[i] = doc_number[i].rstrip()
         try:
-            doc_date.append(datetime.strptime(doc_number[i].split()[1], '%d.%m.%Y'))
+            if doc_number[i].split()[1] == 'ДСП':
+                doc_date.append(datetime.strptime(doc_number[i].split()[2], '%d.%m.%Y'))
+            else:
+                doc_date.append(datetime.strptime(doc_number[i].split()[1], '%d.%m.%Y'))
         except:
             doc_date.append('')
         doc_number[i] = doc_number[i].split()[0]
@@ -2060,12 +2064,12 @@ def sogl_report_send(email):
 
 
 if __name__ == '__main__':
-    FIO = 'Биктимиров Р.Г.'
-    EXECUTOR_ID = '78164285'  # 78264321 ДШ  #70045 OA #78236529 ММ #78164285 РГ #76009 Лихач
+    FIO = 'Гаман М.Ф.'
+    EXECUTOR_ID = '1558294'  # 78264321 ДШ  #70045 OA #78236529 ММ #78164285 РГ #76009 Лихач
     # sogl_report(FIO, EXECUTOR_ID)
     # rez = sogl_update(FIO, EXECUTOR_ID)
     # print(rez)
-    print(sogl_upd(FIO, EXECUTOR_ID))
+    print(sogl_upd(FIO, EXECUTOR_ID, 260399228))
     # sogl_report_send(260399228)
 
 
