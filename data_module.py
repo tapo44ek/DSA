@@ -30,7 +30,7 @@ def renovation_update(tg_id):
     result = subprocess.run(
         [back_venv, '-c', f'from backend import update_all_data; print(update_all_data())'],
         cwd=back_workdir,
-        stdout=None,
+        stdout=subprocess.PIPE,
         stderr=None,
         text=True
     )

@@ -306,7 +306,7 @@ if __name__ == "__main__":
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(str(date11))
 
-    driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/form/div[1]/div[1]/a').click()
+    driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/form/div[2]/div[1]/a').click()
 
     driver.find_element(By.XPATH, '//*[@id="select-user-adapter-author"]/div/div/div[1]/div/div[2]/input').click()
     Usr = User.split(sep='.')
@@ -566,7 +566,7 @@ if __name__ == "__main__":
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(Keys.BACKSPACE)
     driver.find_element(By.XPATH, '//*[@id="end_date"]').send_keys(str(date11))
 
-    driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/form/div[1]/div[1]/a').click()
+    driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[2]/div/div[3]/div/div/form/div[2]/div[1]/a').click()
 
     driver.find_element(By.XPATH, '//*[@id="select-user-adapter-author"]/div/div/div[1]/div/div[2]/input').click()
     Usr = User.split(sep='.')
@@ -705,14 +705,14 @@ if __name__ == "__main__":
     ####################ОТПРАВКА ПИСЬМА
 
     login = r"HQ\ArsenevVD"
-    password = "Vitosik02010201!"
+    password = "Vitosik0201!@!@"
     server = "owa.mos.ru"
     port = 587
     recipients = ['GibadulinMM@mos.ru', 'LikhachIA@mos.ru', 'MusienkoOA@mos.ru', 'SiluyanovaYP@mos.ru']
     #recipients = ['ArsenevVD@mos.ru']
     #cc = ['FatykhovaLM@mos.ru', 'SafinRR@mos.ru']
     cc = ['ArsenevVD@mos.ru', 'ArtemovaOI@mos.ru', 'GabitovDS@mos.ru', 'DmitrievaKI@mos.ru',
-          'ZavyalovaIV@mos.ru', 'IshinkinaEA@mos.ru', 'LavrentievaLV@mos.ru', 'NesterenkoAI1@mos.ru',
+          'IshinkinaEA@mos.ru', 'LavrentievaLV@mos.ru', 'NesterenkoAI1@mos.ru',
           'NikolenkoDA@mos.ru', 'OstapenkoAV2@mos.ru', 'SukhanovaYR@mos.ru', 'GoncharovaIA2@mos.ru',
           'InshakovaMN@mos.ru', 'BorisovaIN1@mos.ru']
 
@@ -737,7 +737,7 @@ if __name__ == "__main__":
     k = 0
     ind = 0
 
-    # SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
+    SMTPmail.send_email(login, password, server, port, recipients, cc, subject, body, att_paths)
     asyncio.run(bot.send_message(UserID, 'Письмо направлено'))
     # send_email(recipients, subject, body, att_paths, cc)
     # while k < 3:
