@@ -313,33 +313,42 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
             df_final.sort_values(by=['Дата согла'], ascending=False, inplace=True)
 
             df_deadline_today_n_older = df_final.loc[df_final['срок РГ'] != '-']
-            df_deadline_today_n_older.to_excel(os.path.join(os.getcwd(), 'export_deadlines.xlsx'))
-            df_deadline_today_n_older['срок РГ'] = pd.to_datetime(df_deadline_today_n_older['срок РГ'], errors='coerce')
-            print(df_deadline_today_n_older.info)
-            print(df_deadline_today_n_older.info())
-            a = datetime.now()
-            deadline_tom = a + timedelta(days=1)
-            df_deadline_today_n_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] <= deadline_tom]
-            df_deadline_today_n_older.sort_values(by='срок РГ', ascending=False, inplace=True)
-            df_deadline_tom = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == deadline_tom]
-            df_deadline_today = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == a]
-            df_deadline_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] < a]
+            if not df_deadline_today_n_older.empty:
+                df_deadline_today_n_older.to_excel(os.path.join(os.getcwd(), 'export_deadlines.xlsx'))
+                df_deadline_today_n_older['срок РГ'] = pd.to_datetime(df_deadline_today_n_older['срок РГ'], errors='coerce')
+                df_deadline_today_n_older['срок РГ'] = df_deadline_today_n_older['срок РГ'].apply(lambda x: datetime.date(x))
+                print(df_deadline_today_n_older.info)
+                print(df_deadline_today_n_older.info())
+                a = datetime.now()
+                a = datetime.date(a)
+                deadline_tom = a + timedelta(days=1)
+                print(df_deadline_today_n_older['срок РГ'])
+                df_deadline_today_n_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] <= deadline_tom]
+                df_deadline_today_n_older.sort_values(by='срок РГ', ascending=False, inplace=True)
+                df_deadline_tom = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == deadline_tom]
+                df_deadline_today = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] == a]
+                df_deadline_older = df_deadline_today_n_older.loc[df_deadline_today_n_older['срок РГ'] < a]
 
-            #Добавить дедлайн завтрашнего дня
+                #Добавить дедлайн завтрашнего дня
 
-            delete_list = []
-            list1v = df_deadline_today['Номер согла'].to_list()
-            for item in list1v:
-                delete_list.append(item)
-            list1v = df_deadline_older['Номер согла'].to_list()
-            for item in list1v:
-                delete_list.append(item)
-            list1v = df_deadline_tom['Номер согла'].to_list()
-            for item in list1v:
-                delete_list.append(item)
+                delete_list = []
+                list1v = df_deadline_today['Номер согла'].to_list()
+                for item in list1v:
+                    delete_list.append(item)
+                list1v = df_deadline_older['Номер согла'].to_list()
+                for item in list1v:
+                    delete_list.append(item)
+                list1v = df_deadline_tom['Номер согла'].to_list()
+                for item in list1v:
+                    delete_list.append(item)
 
-            print(delete_list)
-            df_final = df_final.loc[~df_final['Номер согла'].isin(delete_list)]
+                print(delete_list)
+                df_final = df_final.loc[~df_final['Номер согла'].isin(delete_list)]
+            else:
+                df_deadline_older = pd.DataFrame()
+                df_deadline_today = pd.DataFrame()
+                df_deadline_tom = pd.DataFrame()
+
             df_final_today = df_final.loc[df_final['Дата согла'] == datetime.strftime(datetime.now(), '%d.%m.%Y')]
             df_final_older = df_final.loc[df_final['Дата согла'] != datetime.strftime(datetime.now(), '%d.%m.%Y')]
 
@@ -351,16 +360,17 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
             rez_dead = ''
             rez_dead_today = ''
             rez_dead_tom = ''
+            rez_more = ''
 
-            if not df_deadline_tom.empty:
-                deadline_line = df_deadline_tom['Номер согла'].to_list()
-                deadline_id = df_deadline_tom['doc_id'].to_list()
+            if not df_deadline_older.empty:
+                deadline_line = df_deadline_older['Номер согла'].to_list()
+                deadline_id = df_deadline_older['doc_id'].to_list()
                 for i in range(len(deadline_line)):
                     href_new = template + str(deadline_id[i])
                     deadline_line[i] = str(i + 1) + ') ' + f"<a href='{href_new}'>{deadline_line[i]}</a>"
 
-                deadline_line.insert(0, '\n---------------------\nСоглы к письмам со сроком завтра:')
-                rez_dead_tom = '\n'.join(deadline_line)
+                deadline_line.insert(0, '\n---------------------\nСоглы к просроченным письмам:')
+                rez_dead = '\n'.join(deadline_line)
 
             if not df_deadline_today.empty:
                 deadline_line = df_deadline_today['Номер согла'].to_list()
@@ -372,21 +382,40 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
                 deadline_line.insert(0, '\n---------------------\nСоглы к письмам со сроком сегодня:')
                 rez_dead_today = '\n'.join(deadline_line)
 
-            if not df_deadline_older.empty:
-                deadline_line = df_deadline_older['Номер согла'].to_list()
-                deadline_id = df_deadline_older['doc_id'].to_list()
+            if not df_deadline_tom.empty:
+                deadline_line = df_deadline_tom['Номер согла'].to_list()
+                deadline_id = df_deadline_tom['doc_id'].to_list()
                 for i in range(len(deadline_line)):
                     href_new = template + str(deadline_id[i])
                     deadline_line[i] = str(i + 1) + ') ' + f"<a href='{href_new}'>{deadline_line[i]}</a>"
 
-                deadline_line.insert(0, '\n---------------------\nСоглы к просроченным письмам:')
-                rez_dead = '\n'.join(deadline_line)
+                deadline_line.insert(0, '\n---------------------\nСоглы к письмам со сроком завтра:')
+                rez_dead_tom = '\n'.join(deadline_line)
+
+
+
+
                 # deadline_line = df_deadline_older['Номер согла'].to_list()
                 # for i in range(len(deadline_line)):
                 #     deadline_line[i] = str(i + 1) + ') ' + deadline_line[i]
                 #
                 # deadline_line.insert(0, '\n---------------------\nСоглы к просроченным письмам:')
                 # rez_today = '\n'.join(deadline_line)
+
+            df_today_n_older = pd.concat([df_final_today, df_final_older])
+            if not df_today_n_older.empty:
+                lst_line_today = df_today_n_older['Номер согла'].to_list()
+                deadline_id = df_today_n_older['doc_id'].to_list()
+                for i in range(len(lst_line_today)):
+                    href_new = template + str(deadline_id[i])
+                    lst_line_today[i] = str(i + 1) + ') ' + f"<a href='{href_new}'>{lst_line_today[i]}</a>"
+                text_today = df_today_n_older['Краткое содержание'].to_list()
+
+                # for i in range(len(lst_line_today)):
+                #     lst_line_today[i] = str(i + 1) + ') ' + lst_line_today[i]
+
+                lst_line_today.insert(0, '\n---------------------\nПисьма со сроком от 2 дней (в т.ч. Инициативные):')
+                rez_more = '\n'.join(lst_line_today)
 
             if not df_final_today.empty:
                 lst_line_today = df_final_today['Номер согла'].to_list()
@@ -401,7 +430,6 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
 
                 lst_line_today.insert(0, '\n---------------------\nСоглы, запущенные сегодня:')
                 rez_today = '\n'.join(lst_line_today)
-
 
             if not df_final_older.empty:
                 lst_line_today = df_final_older['Номер согла'].to_list()
@@ -432,8 +460,14 @@ def sogl_upd(FIO, EXECUTOR_ID, tg_id):
                           'Первый заместитель руководителя',
                           'Заместитель руководителя',
                           'Начальник управления']
+
+            title_list2 = ['Руководитель',
+                           'Советник']
+
             if data_module.get_title(tg_id) in title_list:
-                rez = line + rez_dead_tom + rez_dead_today + rez_dead
+                rez = line + rez_dead + rez_dead_today + rez_dead_tom
+            elif data_module.get_title(tg_id) in title_list2:
+                rez = line + rez_dead + rez_dead_today + rez_dead_tom + rez_more
             else:
                 rez = line + rez_dead_tom + rez_dead_today + rez_dead + rez_today + rez_older
             del line
@@ -505,6 +539,8 @@ def sogl_response(s, doc_number, DNSID, queue, fio):
             on_number_link[i] = on_number_link[i].split('=')[1]
             on_number_link[i] = on_number_link[i].split('&')[0]
     data_docs = deadline_check(s, DNSID, on_number_link[0], fio)
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+    print(data_docs)
     datata = []
     for a, b, c, in zip(resp_doc, on_number_link, doc_number_list):
         datata.append([a, b, c, data_docs[0], data_docs[1]])
@@ -589,6 +625,8 @@ def deadline_check(s, DNSID, doc_id, fio):
             gr = gr.rstrip()
             gr = gr.split(' - ')
             if 'змене' in gr[2]:
+                print('!!!!___________________!!!!!!!!!!')
+                print(gr)
                 data.append(gr[0])
                 data.append(datetime.strptime(gr[2].split(': ')[1], '%d.%m.%Y'))
                 data.append(gr[3])
@@ -596,6 +634,8 @@ def deadline_check(s, DNSID, doc_id, fio):
                 data.append(gr[0])
                 data.append(datetime.strptime(gr[1].split(': ')[1], '%d.%m.%Y'))
                 data.append(gr[2])
+            print('///////////////////////')
+            print(data)
             df.loc[len(df.index)] = data
     else:
         df.loc[len(df.index)] = ['Документ ДСП', 'Документ ДСП', 'Документ ДСП']
@@ -653,6 +693,8 @@ def deadline_check(s, DNSID, doc_id, fio):
 
 
                     if 'змене' in executor_one[2]:
+                        print('__________!!!!!!!!!____________')
+                        print(executor_one)
                         executor1.append(executor_one[0])
                         executor1.append(datetime.strptime(executor_one[2].split(': ')[1], '%d.%m.%Y'))
                         executor1.append(executor_one[3])
